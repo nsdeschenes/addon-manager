@@ -10,7 +10,9 @@ const addons: Addon[] = [];
 async function main() {
   intro("Welcome to Addon Manager ✈️");
 
+  if (communityPath === undefined) {
   communityPath = await updateCommunityPath();
+  }
 
   let running = true;
   while (running) {
