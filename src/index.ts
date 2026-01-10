@@ -47,7 +47,7 @@ async function main() {
         await viewAddons(addons);
         break;
       case "load-addons":
-        await loadAddons(communityPath, addons);
+        await loadAddons(addons, communityPath);
         break;
       case "update-community-path":
         communityPath = await updateCommunityPath();
