@@ -3,7 +3,7 @@ import { cancel, tasks } from "@clack/prompts";
 
 import type { Addon } from "./types";
 import { CONTENT_HISTORY_FILE_NAME, MANIFEST_FILE_NAME } from "./constants";
-import { searchForFile } from "./searchForFile";
+import { searchForFile } from "./utils/searchForFile";
 import { ContentHistorySchema, ManifestSchema } from "./schema";
 
 interface AddonPaths {
