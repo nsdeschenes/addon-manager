@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "start": "bun run src/index.ts",
+    "test": "bun test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
