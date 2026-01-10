@@ -1,13 +1,13 @@
 export interface AddonItem {
-  type: "airport";
+  type: string;
   content: string;
   revision: number;
 }
 
 export interface Addon {
-  type: "scenery";
   title: string;
   creator: string;
+  size: number;
   packageName: string;
   packageVersion: string;
   minimumGameVersion: string;
