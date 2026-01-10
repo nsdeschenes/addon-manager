@@ -3,6 +3,7 @@ import { loadAddons } from "./loadAddons";
 import type { Addon } from "./types";
 import { viewAddons } from "./viewAddons";
 import { updateCommunityPath } from "./updateCommunityPath";
+import { viewAirports } from "./viewAirports";
 
 let communityPath: string | symbol;
 const addons: Addon[] = [];
@@ -11,7 +12,7 @@ async function main() {
   intro("Welcome to Addon Manager ✈️");
 
   if (communityPath === undefined) {
-  communityPath = await updateCommunityPath();
+    communityPath = await updateCommunityPath();
   }
 
   let running = true;
@@ -23,6 +24,12 @@ async function main() {
           value: "view-addons",
           label: "View Addons",
           hint: "View all addons",
+          disabled: addons.length === 0,
+        },
+        {
+          value: "view-airports",
+          label: "View Airports",
+          hint: "View all airports",
           disabled: addons.length === 0,
         },
         {
@@ -47,6 +54,9 @@ async function main() {
     switch (selectedOption) {
       case "view-addons":
         await viewAddons(addons);
+        break;
+      case "view-airports":
+        await viewAirports(addons);
         break;
       case "load-addons":
         await loadAddons(addons, communityPath);
