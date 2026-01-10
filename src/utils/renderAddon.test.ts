@@ -1,0 +1,221 @@
+import { test, expect } from "bun:test";
+import { renderAddon } from "./renderAddon";
+import type { Addon } from "../types";
+
+test("renders addon with all fields", () => {
+  const addon: Addon = {
+    title: "Test Airport",
+    creator: "Test Creator",
+    size: 1_500_000,
+    packageName: "test-airport",
+    packageVersion: "1.0.0",
+    minimumGameVersion: "1.0.0",
+    releaseNotes: {
+      neutral: {
+        LastUpdate: "Fixed some bugs",
+        OlderHistory: "Initial release",
+      },
+    },
+    items: [
+      { type: "Scenery", content: "airport.bgl", revision: 1 },
+      { type: "Model", content: "model.bgl", revision: 1 },
+    ],
+  };
+
+  const result = renderAddon(addon);
+
+  expect(result).toContain("Title: Test Airport");
+  expect(result).toContain("Creator: Test Creator");
+  expect(result).toContain("Size: 1.5MB");
+  expect(result).toContain("Package Name: test-airport");
+  expect(result).toContain("Package Version: 1.0.0");
+  expect(result).toContain("Minimum Game Version: 1.0.0");
+  expect(result).toContain("  - Scenery: airport.bgl");
+  expect(result).toContain("  - Model: model.bgl");
+  expect(result).toContain("Last Update: Fixed some bugs");
+  expect(result).toContain("Older History: Initial release");
+});
+
+test("renders addon with empty items array", () => {
+  const addon: Addon = {
+    title: "Empty Addon",
+    creator: "Creator",
+    size: 0,
+    packageName: "empty",
+    packageVersion: "1.0.0",
+    minimumGameVersion: "1.0.0",
+    releaseNotes: {
+      neutral: {
+        LastUpdate: "Update",
+        OlderHistory: "History",
+      },
+    },
+    items: [],
+  };
+
+  const result = renderAddon(addon);
+
+  expect(result).toContain("Title: Empty Addon");
+  expect(result).toContain("Items:");
+  // Items section should be empty (no item lines between Items: and Release Notes:)
+  const itemsIndex = result.indexOf("Items:");
+  const releaseNotesIndex = result.indexOf("Release Notes:");
+  const itemsSection = result.slice(itemsIndex, releaseNotesIndex);
+  expect(itemsSection).not.toContain("  - Scenery:");
+  expect(itemsSection).not.toContain("  - Model:");
+});
+
+test("renders addon with multiple items", () => {
+  const addon: Addon = {
+    title: "Multi Item Addon",
+    creator: "Creator",
+    size: 5_000_000,
+    packageName: "multi",
+    packageVersion: "2.0.0",
+    minimumGameVersion: "1.5.0",
+    releaseNotes: {
+      neutral: {
+        LastUpdate: "Update",
+        OlderHistory: "History",
+      },
+    },
+    items: [
+      { type: "Scenery", content: "scenery1.bgl", revision: 1 },
+      { type: "Scenery", content: "scenery2.bgl", revision: 1 },
+      { type: "Model", content: "model1.bgl", revision: 1 },
+      { type: "Texture", content: "texture.dds", revision: 1 },
+    ],
+  };
+
+  const result = renderAddon(addon);
+
+  expect(result).toContain("  - Scenery: scenery1.bgl");
+  expect(result).toContain("  - Scenery: scenery2.bgl");
+  expect(result).toContain("  - Model: model1.bgl");
+  expect(result).toContain("  - Texture: texture.dds");
+  // Count only item lines (between Items: and Release Notes:)
+  const itemsIndex = result.indexOf("Items:");
+  const releaseNotesIndex = result.indexOf("Release Notes:");
+  const itemsSection = result.slice(itemsIndex, releaseNotesIndex);
+  const itemLines = itemsSection
+    .split("\n")
+    .filter((line) => line.trim().startsWith("-"));
+  expect(itemLines).toHaveLength(4);
+});
+
+test("truncates long release notes", () => {
+  const longUpdate = "A".repeat(100);
+  const longHistory = "B".repeat(100);
+
+  const addon: Addon = {
+    title: "Long Notes",
+    creator: "Creator",
+    size: 1_000,
+    packageName: "long",
+    packageVersion: "1.0.0",
+    minimumGameVersion: "1.0.0",
+    releaseNotes: {
+      neutral: {
+        LastUpdate: longUpdate,
+        OlderHistory: longHistory,
+      },
+    },
+    items: [],
+  };
+
+  const result = renderAddon(addon);
+
+  expect(result).toContain(`Last Update: ${"A".repeat(50)}...`);
+  expect(result).toContain(`Older History: ${"B".repeat(50)}...`);
+  expect(result).not.toContain(longUpdate);
+  expect(result).not.toContain(longHistory);
+});
+
+test("handles different size formats", () => {
+  const testCases = [
+    { size: 500, expected: "500B" },
+    { size: 1_500, expected: "1.5kB" },
+    { size: 1_000_000, expected: "1MB" },
+    { size: 1_500_000_000, expected: "1.5GB" },
+  ];
+
+  testCases.forEach(({ size, expected }) => {
+    const addon: Addon = {
+      title: "Size Test",
+      creator: "Creator",
+      size,
+      packageName: "test",
+      packageVersion: "1.0.0",
+      minimumGameVersion: "1.0.0",
+      releaseNotes: {
+        neutral: {
+          LastUpdate: "Update",
+          OlderHistory: "History",
+        },
+      },
+      items: [],
+    };
+
+    const result = renderAddon(addon);
+    expect(result).toContain(`Size: ${expected}`);
+  });
+});
+
+test("handles special characters in strings", () => {
+  const addon: Addon = {
+    title: "Test & Airport (v2)",
+    creator: "Creator's Name",
+    size: 1_000,
+    packageName: "test-airport_v2",
+    packageVersion: "1.0.0-beta",
+    minimumGameVersion: "1.0.0",
+    releaseNotes: {
+      neutral: {
+        LastUpdate: "Fixed bugs & issues",
+        OlderHistory: "Initial (release)",
+      },
+    },
+    items: [{ type: "Scenery", content: "airport (main).bgl", revision: 1 }],
+  };
+
+  const result = renderAddon(addon);
+
+  expect(result).toContain("Title: Test & Airport (v2)");
+  expect(result).toContain("Creator: Creator's Name");
+  expect(result).toContain("Package Name: test-airport_v2");
+  expect(result).toContain("Package Version: 1.0.0-beta");
+  expect(result).toContain("  - Scenery: airport (main).bgl");
+});
+
+test("renders correct format structure", () => {
+  const addon: Addon = {
+    title: "Test",
+    creator: "Creator",
+    size: 1_000,
+    packageName: "test",
+    packageVersion: "1.0.0",
+    minimumGameVersion: "1.0.0",
+    releaseNotes: {
+      neutral: {
+        LastUpdate: "Update",
+        OlderHistory: "History",
+      },
+    },
+    items: [{ type: "Scenery", content: "test.bgl", revision: 1 }],
+  };
+
+  const result = renderAddon(addon);
+  const lines = result.trim().split("\n");
+
+  expect(lines[0]).toBe("Title: Test");
+  expect(lines[1]).toBe("Creator: Creator");
+  expect(lines[2]).toBe("Size: 1kB");
+  expect(lines[3]).toBe("Package Name: test");
+  expect(lines[4]).toBe("Package Version: 1.0.0");
+  expect(lines[5]).toBe("Minimum Game Version: 1.0.0");
+  expect(lines[6]).toBe("Items:");
+  expect(lines[7]).toBe("  - Scenery: test.bgl");
+  expect(lines[8]).toBe("Release Notes:");
+  expect(lines[9]).toBe("  - Last Update: Update...");
+  expect(lines[10]).toBe("  - Older History: History...");
+});
