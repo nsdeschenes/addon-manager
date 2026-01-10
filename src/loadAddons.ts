@@ -4,11 +4,12 @@ import { cancel, tasks } from "@clack/prompts";
 import type { Addon } from "./types";
 import { CONTENT_HISTORY_FILE_NAME, MANIFEST_FILE_NAME } from "./constants";
 import { searchForFile } from "./searchForFile";
+import { ContentHistorySchema, ManifestSchema } from "./schema";
 
 interface AddonPaths {
+  directory: string;
   manifestPath: string;
   contentHistoryPath: string;
-  packageSize: number;
 }
 
 export async function loadAddons(
@@ -22,9 +23,9 @@ export async function loadAddons(
       title: "Checking Community Path is Accessible",
       task: async () => {
         const directoryAccessible = await fs
-        .access(String(communityPath))
-        .then(() => true)
-        .catch(() => false);
+          .access(String(communityPath))
+          .then(() => true)
+          .catch(() => false);
 
         if (!directoryAccessible) {
           cancel("Directory is not accessible");
@@ -42,17 +43,13 @@ export async function loadAddons(
         for (const path of paths) {
           const directory = `${String(communityPath)}/${path}`;
 
-          const packageSize = await fs
-            .stat(directory)
-            .then((stat) => stat.size);
-
           const manifestPath = await searchForFile({
-            path: String(communityPath),
+            path: directory,
             fileName: MANIFEST_FILE_NAME,
           });
 
           const contentHistoryPath = await searchForFile({
-            path: String(communityPath),
+            path: directory,
             fileName: CONTENT_HISTORY_FILE_NAME,
           });
 
@@ -61,9 +58,9 @@ export async function loadAddons(
           }
 
           foundAddonsPaths.push({
+            directory,
             manifestPath,
             contentHistoryPath,
-            packageSize,
           });
         }
 
@@ -73,7 +70,50 @@ export async function loadAddons(
     {
       title: "Loading Addons",
       task: async () => {
-        console.log(foundAddonsPaths);
+        const errors: string[] = [];
+
+        for (const addon of foundAddonsPaths) {
+          const manifest = await fs.readFile(addon.manifestPath, "utf-8");
+          const manifestJson = ManifestSchema.safeParse(JSON.parse(manifest));
+
+          if (!manifestJson.success) {
+            errors.push(
+              `${addon.directory} - Manifest is invalid: ${manifestJson.error.message}`
+            );
+            continue;
+          }
+
+          const contentHistory = await fs.readFile(
+            addon.contentHistoryPath,
+            "utf-8"
+          );
+          const contentHistoryJson = ContentHistorySchema.safeParse(
+            JSON.parse(contentHistory)
+          );
+
+          if (!contentHistoryJson.success) {
+            errors.push(
+              `${addon.directory} - Content history is invalid: ${contentHistoryJson.error.message}`
+            );
+            continue;
+          }
+
+          const packageSize = await fs
+            .stat(addon.directory)
+            .then((stat) => stat.size);
+
+          addons.push({
+            title: manifestJson.data.title,
+            creator: manifestJson.data.creator,
+            size: packageSize,
+            packageName: contentHistoryJson.data["package-name"],
+            packageVersion: manifestJson.data.package_version,
+            minimumGameVersion: manifestJson.data.minimum_game_version,
+            releaseNotes: manifestJson.data.release_notes,
+            items: contentHistoryJson.data.items,
+          });
+        }
+
         return "Loaded addon data from your community directory";
       },
     },
