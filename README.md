@@ -1,4 +1,8 @@
-# addon-manager
+# Addon Manager
+
+Addon Manager is a small CLI tool built to help you view your MSFS addons.
+
+## Development
 
 To install dependencies:
 
@@ -12,4 +16,3 @@ To run:
 bun run index.ts
 ```
 
-This project was created using `bun init` in bun v1.3.3. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
