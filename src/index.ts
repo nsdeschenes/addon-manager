@@ -4,12 +4,19 @@ import type { Addon } from "./types";
 import { viewAddons } from "./viewAddons";
 import { updateCommunityPath } from "./updateCommunityPath";
 import { viewAirports } from "./viewAirports";
+import { readConfig } from "./config";
 
 let communityPath: string | symbol;
 const addons: Addon[] = [];
 
 async function main() {
   intro("Welcome to Addon Manager ✈️");
+
+  // Load config on startup
+  const config = await readConfig();
+  if (config?.communityPath) {
+    communityPath = config.communityPath;
+  }
 
   if (communityPath === undefined) {
     communityPath = await updateCommunityPath();
@@ -62,7 +69,9 @@ async function main() {
         await loadAddons(addons, communityPath);
         break;
       case "update-community-path":
-        communityPath = await updateCommunityPath();
+        communityPath = await updateCommunityPath(
+          typeof communityPath === "string" ? communityPath : undefined
+        );
         break;
       case "exit":
         running = false;
