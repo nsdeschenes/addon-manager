@@ -4,10 +4,10 @@ import type { Addon } from "./types";
 import { viewAddons } from "./viewAddons";
 import { updateCommunityPath } from "./updateCommunityPath";
 import { viewAirports } from "./viewAirports";
-import { readConfig } from "./config";
+import { readConfig, loadAddonsFromCache } from "./config";
 
 let communityPath: string | symbol;
-const addons: Addon[] = [];
+let addons: Addon[] = [];
 
 async function main() {
   intro("Welcome to Addon Manager ✈️");
@@ -20,6 +20,12 @@ async function main() {
 
   if (communityPath === undefined) {
     communityPath = await updateCommunityPath();
+  }
+
+  // Load addons from cache on startup
+  const cachedAddons = await loadAddonsFromCache();
+  if (cachedAddons) {
+    addons = cachedAddons;
   }
 
   let running = true;
