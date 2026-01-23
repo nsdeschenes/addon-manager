@@ -5,6 +5,7 @@ import type { Addon } from "./types";
 import { CONTENT_HISTORY_FILE_NAME, MANIFEST_FILE_NAME } from "./constants";
 import { searchForFile } from "./utils/searchForFile";
 import { ContentHistorySchema, ManifestSchema } from "./schema";
+import { saveAddons } from "./config";
 
 interface AddonPaths {
   directory: string;
@@ -71,6 +72,7 @@ export async function loadAddons(
       title: "Loading Addons",
       task: async () => {
         const errors: string[] = [];
+        const newAddons: Addon[] = [];
 
         for (const addon of foundAddonsPaths) {
           const manifest = await fs.readFile(addon.manifestPath, "utf-8");
@@ -102,7 +104,7 @@ export async function loadAddons(
             .stat(addon.directory)
             .then((stat) => stat.size);
 
-          addons.push({
+          newAddons.push({
             title: manifestJson.data.title,
             creator: manifestJson.data.creator,
             size: packageSize,
@@ -114,8 +116,13 @@ export async function loadAddons(
           });
         }
 
+        addons = newAddons;
+
         return "Loaded addon data from your community directory";
       },
     },
   ]);
+
+  // Save addons to cache after loading
+  await saveAddons(addons);
 }
