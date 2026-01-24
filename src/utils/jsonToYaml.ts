@@ -1,10 +1,4 @@
-type JsonLike =
-  | null
-  | boolean
-  | number
-  | string
-  | JsonLike[]
-  | { [key: string]: JsonLike };
+type JsonLike = null | boolean | number | string | JsonLike[] | {[key: string]: JsonLike};
 
 export function toYaml(value: JsonLike, indentSize = 2): string {
   return `${serialize(value, 0, indentSize).trimEnd()}\n`;
@@ -16,26 +10,22 @@ function serialize(
   indentSize: number,
   inArray: boolean = false
 ): string {
-  const indent = " ".repeat(level * indentSize);
+  const indent = ' '.repeat(level * indentSize);
 
-  if (
-    value === null ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  ) {
+  if (value === null || typeof value === 'number' || typeof value === 'boolean') {
     return formatScalar(value, indent, inArray);
   }
 
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return formatScalar(value, indent, inArray);
   }
 
   if (Array.isArray(value)) {
     if (value.length === 0) {
-      return `${indent}${inArray ? "- " : ""}[]\n`;
+      return `${indent}${inArray ? '- ' : ''}[]\n`;
     }
 
-    let out = "";
+    let out = '';
     for (const item of value) {
       const isScalar = isScalarValue(item);
       if (isScalar) {
@@ -53,10 +43,10 @@ function serialize(
   // object
   const keys = Object.keys(value);
   if (keys.length === 0) {
-    return `${indent}${inArray ? "- " : ""}{ }\n`;
+    return `${indent}${inArray ? '- ' : ''}{ }\n`;
   }
 
-  let out = "";
+  let out = '';
   for (const key of keys) {
     const v = value[key];
 
@@ -90,10 +80,7 @@ function serialize(
 
 function isScalarValue(v: JsonLike): boolean {
   return (
-    v === null ||
-    typeof v === "boolean" ||
-    typeof v === "number" ||
-    typeof v === "string"
+    v === null || typeof v === 'boolean' || typeof v === 'number' || typeof v === 'string'
   );
 }
 
@@ -103,9 +90,9 @@ function formatScalar(v: JsonLike, indent: string, inArray: boolean): string {
 }
 
 function scalarToYaml(v: JsonLike): string {
-  if (v === null) return "null";
-  if (typeof v === "boolean") return v ? "true" : "false";
-  if (typeof v === "number") return Number.isFinite(v) ? String(v) : "null";
+  if (v === null) return 'null';
+  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  if (typeof v === 'number') return Number.isFinite(v) ? String(v) : 'null';
 
   // string: quote via JSON.stringify to avoid YAML edge cases
   const s = v as string;

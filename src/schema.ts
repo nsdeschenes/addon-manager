@@ -1,7 +1,7 @@
-import { z } from "zod";
+import {z} from 'zod';
 
 export const ContentHistorySchema = z.object({
-  "package-name": z.string(),
+  'package-name': z.string(),
   items: z.array(
     z.object({
       type: z.string(),

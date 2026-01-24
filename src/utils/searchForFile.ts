@@ -1,4 +1,4 @@
-import fs from "node:fs/promises";
+import fs from 'node:fs/promises';
 
 interface SearchForFileOpts {
   path: string;
@@ -16,7 +16,7 @@ export async function searchForFile({
     const currentPath = queue.pop();
     if (!currentPath) continue;
 
-    const entries = await fs.readdir(currentPath, { withFileTypes: true });
+    const entries = await fs.readdir(currentPath, {withFileTypes: true});
 
     for (const entry of entries) {
       const fullPath = `${currentPath}/${entry.name}`;
