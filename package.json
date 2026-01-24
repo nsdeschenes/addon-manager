@@ -7,14 +7,21 @@
   "scripts": {
     "start": "bun run src/index.ts",
     "test": "bun test",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint": "bun run lint:ts && bun run lint:prettier",
+    "lint:ts": "eslint",
+    "lint:prettier": "prettier \"**/*{.ts}\" --check --log-level=error --experimental-cli --no-cache",
+    "fix": "bun run fix:lint && bun run fix:format",
+    "fix:lint": "eslint --fix",
+    "fix:format": "prettier \"**/*{.ts}\" --write --log-level=error --experimental-cli --no-cache"
   },
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
+    "@prettier/plugin-oxc": "^0.1.3",
     "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
     "eslint": "^9.39.2",
+    "prettier": "^3.8.1",
     "typescript-eslint": "^8.52.0"
   },
   "peerDependencies": {
