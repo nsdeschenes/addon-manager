@@ -7,7 +7,7 @@ export async function viewAddons(addons: Addon[]) {
     message: "Select addons to view",
     options: addons.map((addon) => ({
       value: addon.packageName,
-      label: addon.packageName,
+      label: `${addon.packageName}: v${addon.packageVersion}`,
     })),
     maxItems: 10,
   });
