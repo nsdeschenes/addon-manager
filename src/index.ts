@@ -1,4 +1,4 @@
-import { intro, outro, select } from "@clack/prompts";
+import { intro, outro, select, isCancel, cancel } from "@clack/prompts";
 import { loadAddons } from "./loadAddons";
 import type { Addon } from "./types";
 import { viewAddons } from "./viewAddons";
@@ -83,6 +83,12 @@ async function main() {
         running = false;
         break;
       default:
+        if (isCancel(selectedOption)) {
+          cancel("No option selected");
+          running = false;
+          break;
+        }
+
         throw new Error(`Invalid option: ${String(selectedOption)}`);
     }
   }
