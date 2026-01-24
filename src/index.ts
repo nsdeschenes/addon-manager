@@ -1,16 +1,17 @@
-import { intro, outro, select, isCancel, cancel } from "@clack/prompts";
-import { loadAddons } from "./loadAddons";
-import type { Addon } from "./types";
-import { viewAddons } from "./viewAddons";
-import { updateCommunityPath } from "./updateCommunityPath";
-import { viewAirports } from "./viewAirports";
-import { readConfig, loadAddonsFromCache } from "./config";
+import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
+
+import {loadAddonsFromCache, readConfig} from './config';
+import {loadAddons} from './loadAddons';
+import type {Addon} from './types';
+import {updateCommunityPath} from './updateCommunityPath';
+import {viewAddons} from './viewAddons';
+import {viewAirports} from './viewAirports';
 
 let communityPath: string | symbol;
 let addons: Addon[] = [];
 
 async function main() {
-  intro("Welcome to Addon Manager ✈️");
+  intro('Welcome to Addon Manager ✈️');
 
   // Load config on startup
   const config = await readConfig();
@@ -31,60 +32,60 @@ async function main() {
   let running = true;
   while (running) {
     const selectedOption = await select({
-      message: "What would you like to do?",
+      message: 'What would you like to do?',
       options: [
         {
-          value: "view-addons",
-          label: "View Addons",
-          hint: "View all addons",
+          value: 'view-addons',
+          label: 'View Addons',
+          hint: 'View all addons',
           disabled: addons.length === 0,
         },
         {
-          value: "view-airports",
-          label: "View Airports",
-          hint: "View all airports",
+          value: 'view-airports',
+          label: 'View Airports',
+          hint: 'View all airports',
           disabled: addons.length === 0,
         },
         {
-          value: "load-addons",
-          label: "Load Addons",
-          hint: "Load addon data from your community directory",
+          value: 'load-addons',
+          label: 'Load Addons',
+          hint: 'Load addon data from your community directory',
           disabled: communityPath === undefined,
         },
         {
-          value: "update-community-path",
-          label: "Update Community Path",
-          hint: "Update the path to your community directory",
+          value: 'update-community-path',
+          label: 'Update Community Path',
+          hint: 'Update the path to your community directory',
         },
         {
-          value: "exit",
-          label: "Exit",
-          hint: "Exit the program",
+          value: 'exit',
+          label: 'Exit',
+          hint: 'Exit the program',
         },
       ],
     });
 
     switch (selectedOption) {
-      case "view-addons":
+      case 'view-addons':
         await viewAddons(addons);
         break;
-      case "view-airports":
+      case 'view-airports':
         await viewAirports(addons);
         break;
-      case "load-addons":
+      case 'load-addons':
         await loadAddons(addons, communityPath);
         break;
-      case "update-community-path":
+      case 'update-community-path':
         communityPath = await updateCommunityPath(
-          typeof communityPath === "string" ? communityPath : undefined
+          typeof communityPath === 'string' ? communityPath : undefined
         );
         break;
-      case "exit":
+      case 'exit':
         running = false;
         break;
       default:
         if (isCancel(selectedOption)) {
-          cancel("No option selected");
+          cancel('No option selected');
           running = false;
           break;
         }
@@ -93,7 +94,7 @@ async function main() {
     }
   }
 
-  outro("Thank you for using Addon Manager, and have a safe flight ✈️");
+  outro('Thank you for using Addon Manager, and have a safe flight ✈️');
 }
 
 main().catch(console.error);
