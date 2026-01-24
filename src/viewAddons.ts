@@ -1,4 +1,4 @@
-import { autocomplete, box } from "@clack/prompts";
+import { autocomplete, box, cancel, isCancel } from "@clack/prompts";
 import type { Addon } from "./types";
 import { renderAddon } from "./utils/renderAddon";
 
@@ -11,6 +11,11 @@ export async function viewAddons(addons: Addon[]) {
     })),
     maxItems: 10,
   });
+
+  if (isCancel(addon)) {
+    cancel("No addon selected");
+    return "";
+  }
 
   const selectedAddon = addons.find((a) => a.packageName === addon)!;
 
