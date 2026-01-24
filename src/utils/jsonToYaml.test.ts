@@ -4,23 +4,23 @@ import {toYaml} from './jsonToYaml';
 
 describe('toYaml - scalars', () => {
   test('serializes null, booleans, and numbers', () => {
-    expect(toYaml(null)).toBe('null');
-    expect(toYaml(true)).toBe('true');
-    expect(toYaml(false)).toBe('false');
-    expect(toYaml(0)).toBe('0');
-    expect(toYaml(42)).toBe('42');
+    expect(toYaml(null)).toBe('null\n');
+    expect(toYaml(true)).toBe('true\n');
+    expect(toYaml(false)).toBe('false\n');
+    expect(toYaml(0)).toBe('0\n');
+    expect(toYaml(42)).toBe('42\n');
   });
 
   test('serializes simple strings without quotes when possible', () => {
-    expect(toYaml('hello')).toBe('hello');
-    expect(toYaml('HelloWorld_123')).toBe('HelloWorld_123');
-    expect(toYaml('with-dash')).toBe('with-dash');
+    expect(toYaml('hello')).toBe('hello\n');
+    expect(toYaml('HelloWorld_123')).toBe('HelloWorld_123\n');
+    expect(toYaml('with-dash')).toBe('with-dash\n');
   });
 
   test('serializes complex strings with JSON quoting', () => {
-    expect(toYaml('hello world')).toBe('"hello world"');
-    expect(toYaml('value:with:colon')).toBe('"value:with:colon"');
-    expect(toYaml('line\nbreak')).toBe('"line\\nbreak"');
+    expect(toYaml('hello world')).toBe('"hello world"\n');
+    expect(toYaml('value:with:colon')).toBe('"value:with:colon"\n');
+    expect(toYaml('line\nbreak')).toBe('"line\\nbreak"\n');
   });
 });
 
@@ -32,7 +32,9 @@ describe('toYaml - objects', () => {
       count: 3,
     };
 
-    expect(toYaml(obj)).toBe(['name: Airport', 'enabled: true', 'count: 3'].join('\n'));
+    expect(toYaml(obj)).toBe(
+      ['name: Airport', 'enabled: true', 'count: 3', ''].join('\n')
+    );
   });
 
   test('includes falsy values in objects', () => {
@@ -51,6 +53,7 @@ describe('toYaml - objects', () => {
         'zero: 0',
         'falseValue: false',
         'nullValue: null',
+        '',
       ].join('\n')
     );
   });
@@ -65,12 +68,12 @@ describe('toYaml - objects', () => {
 
     expect(toYaml(obj)).toBe(
       // NOTE: falsy nested values are also skipped
-      ['parent:', '  child: value', '  flag: false'].join('\n')
+      ['parent:', '  child: value', '  flag: false', ''].join('\n')
     );
   });
 
   test('serializes empty object as { }', () => {
-    expect(toYaml({})).toBe('{ }');
+    expect(toYaml({})).toBe('{ }\n');
   });
 });
 
@@ -78,11 +81,11 @@ describe('toYaml - arrays', () => {
   test('serializes array of scalars', () => {
     const arr = ['one', 'two', 'three'];
 
-    expect(toYaml(arr)).toBe(['- one', '- two', '- three'].join('\n'));
+    expect(toYaml(arr)).toBe(['- one', '- two', '- three', ''].join('\n'));
   });
 
   test('serializes empty array as []', () => {
-    expect(toYaml([])).toBe('[]');
+    expect(toYaml([])).toBe('[]\n');
   });
 
   test('serializes array of objects', () => {
@@ -92,7 +95,7 @@ describe('toYaml - arrays', () => {
     ];
 
     expect(toYaml(arr)).toBe(
-      ['-', '  name: A', '  value: 1', '-', '  name: B', '  value: 2'].join('\n')
+      ['-', '  name: A', '  value: 1', '-', '  name: B', '  value: 2', ''].join('\n')
     );
   });
 
@@ -106,7 +109,9 @@ describe('toYaml - arrays', () => {
       },
     ];
 
-    expect(toYaml(value)).toBe(['-', '  name: A', '  nested:', '    key: x'].join('\n'));
+    expect(toYaml(value)).toBe(
+      ['-', '  name: A', '  nested:', '    key: x', ''].join('\n')
+    );
   });
 });
 
@@ -118,6 +123,6 @@ describe('toYaml - indentation', () => {
       },
     };
 
-    expect(toYaml(obj, 4)).toBe(['parent:', '    child: value'].join('\n'));
+    expect(toYaml(obj, 4)).toBe(['parent:', '    child: value', ''].join('\n'));
   });
 });
