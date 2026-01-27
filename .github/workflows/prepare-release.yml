@@ -41,3 +41,4 @@ jobs:
         with:
           version: ${{ inputs.version }}
           merge_target: ${{ inputs.branch }}
+          publish_repo: ${{ github.repository }}
