@@ -26,6 +26,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Remove conflicting branch: a branch named "release" blocks "release/<version>"
+      # (Git refs: refs/heads/release is a file, so refs/heads/release/0.0.2 can't exist)
+      - name: Remove conflicting release branch
+        run: |
+          if git ls-remote --exit-code --heads origin release 2>/dev/null; then
+            git push origin --delete release
+          fi
+
       - name: Prepare release
         uses: getsentry/craft@v2
         env:
