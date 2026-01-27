@@ -1,0 +1,8 @@
+minVersion: "2.0.0"
+
+changelog:
+  policy: auto
+
+targets:
+  - name: github
+    tagPrefix: v
