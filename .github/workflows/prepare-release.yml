@@ -1,0 +1,35 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.2.3, major, minor, patch, or auto)'
+        required: true
+        type: string
+      branch:
+        description: 'Branch to prepare release from'
+        required: true
+        type: string
+        default: main
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare release
+        uses: getsentry/craft@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          version: ${{ inputs.version }}
+          merge_target: ${{ inputs.branch }}
