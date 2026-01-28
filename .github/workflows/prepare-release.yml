@@ -1,46 +1,47 @@
 name: Prepare Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.2.3, major, minor, patch, or auto)'
-        required: true
-        type: string
-      branch:
-        description: 'Branch to prepare release from'
-        required: true
-        type: string
-        default: main
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "Version to release (e.g., 1.2.3, major, minor, patch, or auto)"
+                required: true
+                type: string
+            branch:
+                description: "Branch to prepare release from"
+                required: true
+                type: string
+                default: main
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+    contents: write
+    issues: write
+    pull-requests: write
 
 jobs:
-  prepare:
-    name: Prepare Release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    prepare:
+        name: Prepare Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      # Remove conflicting branch: a branch named "release" blocks "release/<version>"
-      # (Git refs: refs/heads/release is a file, so refs/heads/release/0.0.2 can't exist)
-      - name: Remove conflicting release branch
-        run: |
-          if git ls-remote --exit-code --heads origin release 2>/dev/null; then
-            git push origin --delete release
-          fi
+            # Remove conflicting branch: a branch named "release" blocks "release/<version>"
+            # (Git refs: refs/heads/release is a file, so refs/heads/release/0.0.2 can't exist)
+            - name: Remove conflicting release branch
+              run: |
+                  if git ls-remote --exit-code --heads origin release 2>/dev/null; then
+                    git push origin --delete release
+                  fi
 
-      - name: Prepare release
-        uses: getsentry/craft@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          version: ${{ inputs.version }}
-          merge_target: ${{ inputs.branch }}
-          publish_repo: ${{ github.repository }}
+            - name: Prepare release
+              uses: getsentry/craft@v2
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  version: ${{ inputs.version }}
+                  merge_target: ${{ inputs.branch }}
+                  publish_repo: ${{ github.repository }}
+                  statuses: true
