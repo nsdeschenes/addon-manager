@@ -17,6 +17,7 @@ permissions:
     contents: write
     issues: write
     pull-requests: write
+    statuses: write
 
 jobs:
     prepare:
@@ -44,4 +45,3 @@ jobs:
                   version: ${{ inputs.version }}
                   merge_target: ${{ inputs.branch }}
                   publish_repo: ${{ github.repository }}
-                  statuses: true
