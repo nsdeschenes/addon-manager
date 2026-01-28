@@ -1,78 +1,78 @@
 name: Publish Release
 
 on:
-  push:
-    branches:
-      - 'release/**'
+    push:
+        branches:
+            - "release/**"
 
 permissions:
-  contents: write
-  issues: write
-  pull-requests: write
+    contents: write
+    issues: write
+    pull-requests: write
 
 jobs:
-  publish:
-    name: Publish Release
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    publish:
+        name: Publish Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                  bun-version: latest
 
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.bun/install/cache
-            node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
+            - name: Cache dependencies
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.bun/install/cache
+                      node_modules
+                  key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-bun-
 
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Build all platforms
-        run: bun run build:all
+            - name: Build all platforms
+              run: bun run build:all
 
-      - name: Download Craft binary
-        shell: bash
-        run: |
-          CRAFT_URL=$(curl -fsSL "https://api.github.com/repos/getsentry/craft/releases/latest" \
-            | jq -r '.assets[] | select(.name == "craft") | .browser_download_url')
-          
-          if [[ -z "$CRAFT_URL" ]]; then
-            echo "::error::Failed to determine Craft download URL"
-            exit 1
-          fi
-          
-          echo "Downloading Craft from: ${CRAFT_URL}"
-          sudo curl -fsSL -o /usr/local/bin/craft "$CRAFT_URL"
-          sudo chmod +x /usr/local/bin/craft
-          
-          if [[ ! -s /usr/local/bin/craft ]]; then
-            echo "::error::Downloaded Craft binary is empty or missing"
-            exit 1
-          fi
+            - name: Download Craft binary
+              shell: bash
+              run: |
+                  CRAFT_URL=$(curl -fsSL "https://api.github.com/repos/getsentry/craft/releases/latest" \
+                    | jq -r '.assets[] | select(.name == "craft") | .browser_download_url')
 
-      - name: Extract version from branch
-        id: version
-        shell: bash
-        run: |
-          BRANCH_NAME="${{ github.ref_name }}"
-          # Extract version from release/<version> branch pattern
-          VERSION="${BRANCH_NAME#release/}"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Extracted version: ${VERSION}"
+                  if [[ -z "$CRAFT_URL" ]]; then
+                    echo "::error::Failed to determine Craft download URL"
+                    exit 1
+                  fi
 
-      - name: Publish release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          craft publish ${{ steps.version.outputs.version }}
+                  echo "Downloading Craft from: ${CRAFT_URL}"
+                  sudo curl -fsSL -o /usr/local/bin/craft "$CRAFT_URL"
+                  sudo chmod +x /usr/local/bin/craft
+
+                  if [[ ! -s /usr/local/bin/craft ]]; then
+                    echo "::error::Downloaded Craft binary is empty or missing"
+                    exit 1
+                  fi
+
+            - name: Extract version from branch
+              id: version
+              shell: bash
+              run: |
+                  BRANCH_NAME="${{ github.ref_name }}"
+                  # Extract version from release/<version> branch pattern
+                  VERSION="${BRANCH_NAME#release/}"
+                  echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+                  echo "Extracted version: ${VERSION}"
+
+            - name: Publish release
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  craft publish ${{ steps.version.outputs.version }}
