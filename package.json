@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.0-alpha.9",
+    "@sentry/bun": "^10.38.0",
     "zod": "^4.3.5"
   }
 }
