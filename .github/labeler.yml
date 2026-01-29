@@ -1,0 +1,12 @@
+# Labels applied when PR touches these paths. Aligns with release.yml exclusions.
+ci:
+  - .github/**/*
+
+dependencies:
+  - package.json
+  - bun.lock
+  - "**/package.json"
+  - "**/bun.lock"
+
+application:
+  - src/**/*
