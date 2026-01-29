@@ -3,49 +3,53 @@ import fs from 'node:fs/promises';
 import {cancel, isCancel, text} from '@clack/prompts';
 
 import {writeConfig} from './config';
+import {wrapWithSpan} from './sentry';
 
-export async function updateCommunityPath(defaultValue?: string): Promise<string> {
-  const defaultPlaceholder = `Currently set to: ${defaultValue}`;
-  const communityPath = await text({
-    message: 'Enter the path to your community directory',
-    placeholder: defaultValue
-      ? defaultPlaceholder
-      : 'C:/Users/YourUsername/Documents/My Community',
-    validate: value => {
-      const input = String(value ?? '').trim();
+export const updateCommunityPath = wrapWithSpan(
+  {spanName: 'update-community-path', op: 'cli.command'},
+  async function (defaultValue?: string): Promise<string> {
+    const defaultPlaceholder = `Currently set to: ${defaultValue}`;
+    const communityPath = await text({
+      message: 'Enter the path to your community directory',
+      placeholder: defaultValue
+        ? defaultPlaceholder
+        : 'C:/Users/YourUsername/Documents/My Community',
+      validate: value => {
+        const input = String(value ?? '').trim();
 
-      if (!input) return 'Community path is required';
+        if (!input) return 'Community path is required';
 
-      return undefined;
-    },
-  });
+        return undefined;
+      },
+    });
 
-  if (isCancel(communityPath)) {
-    cancel('Community path update cancelled. Existing value will be kept.');
-    return defaultValue ?? '';
-  }
-
-  try {
-    const stats = await fs.stat(communityPath);
-
-    if (!stats.isDirectory()) {
-      return 'Path must be an existing directory';
-    }
-  } catch (error: unknown) {
-    if (
-      error &&
-      typeof error === 'object' &&
-      'code' in error &&
-      (error as {code?: string}).code === 'ENOENT'
-    ) {
-      return 'Directory does not exist';
+    if (isCancel(communityPath)) {
+      cancel('Community path update cancelled. Existing value will be kept.');
+      return defaultValue ?? '';
     }
 
-    return 'Unable to access directory';
+    try {
+      const stats = await fs.stat(communityPath);
+
+      if (!stats.isDirectory()) {
+        return 'Path must be an existing directory';
+      }
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        (error as {code?: string}).code === 'ENOENT'
+      ) {
+        return 'Directory does not exist';
+      }
+
+      return 'Unable to access directory';
+    }
+
+    // Save to config after successful input
+    await writeConfig({communityPath: String(communityPath)});
+
+    return String(communityPath);
   }
-
-  // Save to config after successful input
-  await writeConfig({communityPath: String(communityPath)});
-
-  return String(communityPath);
-}
+);
