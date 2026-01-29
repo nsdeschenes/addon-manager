@@ -2,6 +2,7 @@ import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 
 import {loadAddonsFromCache, readConfig} from './config';
 import {loadAddons} from './loadAddons';
+import {withTelemetry} from './sentry';
 import type {Addon} from './types';
 import {updateCommunityPath} from './updateCommunityPath';
 import {viewAddons} from './viewAddons';
@@ -97,4 +98,6 @@ async function main() {
   outro('Thank you for using Addon Manager, and have a safe flight ✈️');
 }
 
-main().catch(console.error);
+withTelemetry(async () => {
+  await main();
+}).catch(console.error);
