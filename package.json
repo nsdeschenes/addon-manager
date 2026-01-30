@@ -18,10 +18,10 @@
     "fix:lint": "eslint --fix",
     "fix:format": "prettier \"**/*{.ts}\" --write --log-level=error --experimental-cli --no-cache",
     "build:all": "bun run build:linux-x64 && bun run build:darwin-x64 && bun run build:darwin-arm64 && bun run build:windows-x64",
-    "build:linux-x64": "bun build src/index.ts --compile=bun-linux-x64 --outfile dist/addon-manager-linux-x64",
-    "build:darwin-x64": "bun build src/index.ts --compile=bun-darwin-x64 --outfile dist/addon-manager-darwin-x64",
-    "build:darwin-arm64": "bun build src/index.ts --compile=bun-darwin-arm64 --outfile dist/addon-manager-darwin-arm64",
-    "build:windows-x64": "bun build src/index.ts --compile=bun-windows-x64 --outfile dist/addon-manager-windows-x64.exe"
+    "build:linux-x64": "bun build src/index.ts --compile --target=bun-linux-x64 --outfile dist/addon-manager-linux-x64",
+    "build:darwin-x64": "bun build src/index.ts --compile --target=bun-darwin-x64 --outfile dist/addon-manager-darwin-x64",
+    "build:darwin-arm64": "bun build src/index.ts --compile --target=bun-darwin-arm64 --outfile dist/addon-manager-darwin-arm64",
+    "build:windows-x64": "bun build src/index.ts --compile --target=bun-windows-x64 --outfile dist/addon-manager-windows-x64.exe"
   },
   "devDependencies": {
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
