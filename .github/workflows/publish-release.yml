@@ -1,9 +1,8 @@
 name: Publish Release
 
 on:
-    push:
-        branches:
-            - "release/**"
+    pull_request:
+        types: [closed]
 
 permissions:
     contents: write
@@ -14,18 +13,30 @@ jobs:
     publish:
         name: Publish Release
         runs-on: ubuntu-latest
+        if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
         steps:
+            - name: Check release label
+              id: check_labels
+              env:
+                  PR_LABELS: ${{ toJSON(github.event.pull_request.labels) }}
+              run: |
+                  HAS_RELEASE=$(echo "$PR_LABELS" | jq -e 'any(.name == "release")' >/dev/null 2>&1 && echo 'true' || echo 'false')
+                  echo "has_release=${HAS_RELEASE}" >> "$GITHUB_OUTPUT"
+
             - name: Checkout code
+              if: steps.check_labels.outputs.has_release == 'true'
               uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
             - name: Setup Bun
+              if: steps.check_labels.outputs.has_release == 'true'
               uses: oven-sh/setup-bun@v2
               with:
                   bun-version: latest
 
             - name: Cache dependencies
+              if: steps.check_labels.outputs.has_release == 'true'
               uses: actions/cache@v4
               with:
                   path: |
@@ -36,12 +47,15 @@ jobs:
                       ${{ runner.os }}-bun-
 
             - name: Install dependencies
+              if: steps.check_labels.outputs.has_release == 'true'
               run: bun install --frozen-lockfile
 
             - name: Build all platforms
+              if: steps.check_labels.outputs.has_release == 'true'
               run: bun run build:all
 
             - name: Download Craft binary
+              if: steps.check_labels.outputs.has_release == 'true'
               shell: bash
               run: |
                   CRAFT_URL=$(curl -fsSL "https://api.github.com/repos/getsentry/craft/releases/latest" \
@@ -62,16 +76,21 @@ jobs:
                   fi
 
             - name: Extract version from branch
+              if: steps.check_labels.outputs.has_release == 'true'
               id: version
               shell: bash
               run: |
-                  BRANCH_NAME="${{ github.ref_name }}"
-                  # Extract version from release/<version> branch pattern
-                  VERSION="${BRANCH_NAME#release/}"
+                  HEAD_REF="${{ github.event.pull_request.head.ref }}"
+                  if [[ "$HEAD_REF" == release/* ]]; then
+                    VERSION="${HEAD_REF#release/}"
+                  else
+                    VERSION=$(jq -r '.version' package.json)
+                  fi
                   echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
                   echo "Extracted version: ${VERSION}"
 
             - name: Publish release
+              if: steps.check_labels.outputs.has_release == 'true'
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
