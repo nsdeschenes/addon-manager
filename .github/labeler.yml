@@ -16,4 +16,4 @@ application:
     - any-glob-to-any-file: src/**/*
 
 release:
-  - head-branch: release/**
+  - head-branch: ^release/
