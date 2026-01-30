@@ -14,3 +14,6 @@ dependencies:
 application:
   - changed-files:
     - any-glob-to-any-file: src/**/*
+
+release:
+  - head-branch: release/**
