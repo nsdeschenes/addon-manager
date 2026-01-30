@@ -6,3 +6,4 @@ changelog:
 targets:
   - name: github
     tagPrefix: v
+    includeNames: /^addon-manager-.*/
