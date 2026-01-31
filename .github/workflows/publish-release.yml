@@ -101,4 +101,7 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  craft publish ${{ steps.version.outputs.version }} --rev ${{ github.event.pull_request.merge_commit_sha }}
+                  craft publish ${{ steps.version.outputs.version }} \
+                  --rev ${{ github.event.pull_request.merge_commit_sha }} \
+                  --no-merge \
+                  --keep-branch
