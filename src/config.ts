@@ -74,12 +74,6 @@ const AddonSchema = z.object({
   packageName: z.string(),
   packageVersion: z.string(),
   minimumGameVersion: z.string(),
-  releaseNotes: z.object({
-    neutral: z.object({
-      LastUpdate: z.string(),
-      OlderHistory: z.string(),
-    }),
-  }),
   items: z.array(AddonItemSchema),
 });
 
