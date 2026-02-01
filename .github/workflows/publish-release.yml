@@ -60,6 +60,7 @@ jobs:
               with:
                   name: ${{ github.sha }}
                   path: dist/
+                  retention-days: 1
 
             - name: Download Craft binary
               if: steps.check_labels.outputs.has_release == 'true'
