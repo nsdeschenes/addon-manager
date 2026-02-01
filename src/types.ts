@@ -11,11 +11,5 @@ export interface Addon {
   packageName: string;
   packageVersion: string;
   minimumGameVersion: string;
-  releaseNotes: {
-    neutral: {
-      LastUpdate: string;
-      OlderHistory: string;
-    };
-  };
   items: AddonItem[];
 }
