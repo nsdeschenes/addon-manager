@@ -19,10 +19,12 @@ export const ManifestSchema = z.object({
   creator: z.string(),
   package_version: z.string(),
   minimum_game_version: z.string(),
-  release_notes: z.object({
-    neutral: z.object({
-      LastUpdate: z.string(),
-      OlderHistory: z.string(),
-    }),
-  }),
+  release_notes: z
+    .object({
+      neutral: z.object({
+        LastUpdate: z.string(),
+        OlderHistory: z.string(),
+      }),
+    })
+    .optional(),
 });
