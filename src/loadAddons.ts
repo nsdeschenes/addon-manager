@@ -113,7 +113,6 @@ export const loadAddons = wrapWithSpan(
               packageName: contentHistoryJson.data['package-name'],
               packageVersion: manifestJson.data.package_version,
               minimumGameVersion: manifestJson.data.minimum_game_version,
-              releaseNotes: manifestJson.data.release_notes,
               items: contentHistoryJson.data.items,
             });
           }
