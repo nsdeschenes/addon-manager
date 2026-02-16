@@ -5,10 +5,12 @@ import {loadAddons} from './loadAddons';
 import {withTelemetry} from './sentry';
 import type {Addon} from './types';
 import {updateCommunityPath} from './updateCommunityPath';
+import {updateSentryDsn} from './updateSentryDsn';
 import {viewAddons} from './viewAddons';
 import {viewAirports} from './viewAirports';
 
 let communityPath: string | symbol;
+let sentryDsn: string | undefined;
 let addons: Addon[] = [];
 
 async function main() {
@@ -19,6 +21,7 @@ async function main() {
   if (config?.communityPath) {
     communityPath = config.communityPath;
   }
+  sentryDsn = config?.sentryDsn;
 
   if (communityPath === undefined) {
     communityPath = await updateCommunityPath();
@@ -59,6 +62,11 @@ async function main() {
           hint: 'Update the path to your community directory',
         },
         {
+          value: 'update-sentry-dsn',
+          label: 'Update Sentry DSN',
+          hint: 'Configure Sentry DSN for error telemetry',
+        },
+        {
           value: 'exit',
           label: 'Exit',
           hint: 'Exit the program',
@@ -81,6 +89,9 @@ async function main() {
           typeof communityPath === 'string' ? communityPath : undefined
         );
         break;
+      case 'update-sentry-dsn':
+        sentryDsn = (await updateSentryDsn(sentryDsn)) || undefined;
+        break;
       case 'exit':
         running = false;
         break;
@@ -98,6 +109,9 @@ async function main() {
   outro('Thank you for using Addon Manager, and have a safe flight ✈️');
 }
 
-withTelemetry(async () => {
-  await main();
-}).catch(console.error);
+// Read config early to get DSN for telemetry init
+readConfig().then(config => {
+  withTelemetry(config?.sentryDsn, async () => {
+    await main();
+  }).catch(console.error);
+});
