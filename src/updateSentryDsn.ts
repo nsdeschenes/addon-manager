@@ -9,7 +9,6 @@ export const updateSentryDsn = wrapWithSpan(
     const dsn = await text({
       message: 'Enter your Sentry DSN (leave empty to disable telemetry)',
       placeholder: defaultValue ? `Currently set to: ${defaultValue}` : 'https://examplePublicKey@o0.ingest.sentry.io/0',
-      defaultValue: defaultValue ?? '',
     });
 
     if (isCancel(dsn)) {
