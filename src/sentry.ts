@@ -5,10 +5,11 @@
 
 import * as Sentry from '@sentry/bun';
 
-import {SENTRY_DSN} from './constants';
-
-export async function withTelemetry<T>(callback: () => T | Promise<T>): Promise<T> {
-  const client = initSentry(false);
+export async function withTelemetry<T>(
+  sentryDsn: string | undefined,
+  callback: () => T | Promise<T>
+): Promise<T> {
+  const client = initSentry(sentryDsn);
   if (!client?.getOptions().enabled) {
     return callback();
   }
@@ -68,12 +69,13 @@ export function wrapWithSpan<T extends (...args: any[]) => any>(
   };
 }
 
-function initSentry(enabled: boolean) {
+function initSentry(dsn: string | undefined) {
   const version = '0.0.0-dev';
   const environment = 'development';
+  const enabled = !!dsn;
 
   const client = Sentry.init({
-    dsn: SENTRY_DSN,
+    dsn: dsn ?? '',
     enabled,
     environment,
     release: version,

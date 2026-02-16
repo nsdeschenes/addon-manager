@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 
 import {cancel, isCancel, text} from '@clack/prompts';
 
-import {writeConfig} from './config';
+import {readConfig, writeConfig} from './config';
 import {wrapWithSpan} from './sentry';
 
 export const updateCommunityPath = wrapWithSpan(
@@ -47,8 +47,9 @@ export const updateCommunityPath = wrapWithSpan(
       return 'Unable to access directory';
     }
 
-    // Save to config after successful input
-    await writeConfig({communityPath: String(communityPath)});
+    // Read existing config to preserve other fields, then save
+    const existing = await readConfig();
+    await writeConfig({...existing, communityPath: String(communityPath)});
 
     return String(communityPath);
   }
