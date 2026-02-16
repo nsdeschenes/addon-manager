@@ -11,7 +11,10 @@ interface SettingsState {
 
 export const settings = wrapWithSpan(
   {spanName: 'settings', op: 'cli.command'},
-  async function (communityPath: string | symbol, sentryDsn: string | undefined): Promise<SettingsState> {
+  async function (
+    communityPath: string | symbol,
+    sentryDsn: string | undefined
+  ): Promise<SettingsState> {
     let inSettings = true;
 
     while (inSettings) {
