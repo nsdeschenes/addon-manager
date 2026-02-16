@@ -4,8 +4,8 @@ import {loadAddonsFromCache, readConfig} from './config';
 import {loadAddons} from './loadAddons';
 import {withTelemetry} from './sentry';
 import type {Addon} from './types';
+import {settings} from './settings';
 import {updateCommunityPath} from './updateCommunityPath';
-import {updateSentryDsn} from './updateSentryDsn';
 import {viewAddons} from './viewAddons';
 import {viewAirports} from './viewAirports';
 
@@ -57,14 +57,9 @@ async function main() {
           disabled: communityPath === undefined,
         },
         {
-          value: 'update-community-path',
-          label: 'Update Community Path',
-          hint: 'Update the path to your community directory',
-        },
-        {
-          value: 'update-sentry-dsn',
-          label: 'Update Sentry DSN',
-          hint: 'Configure Sentry DSN for error telemetry',
+          value: 'settings',
+          label: 'Settings',
+          hint: 'Update application configuration',
         },
         {
           value: 'exit',
@@ -84,13 +79,8 @@ async function main() {
       case 'load-addons':
         await loadAddons(addons, communityPath);
         break;
-      case 'update-community-path':
-        communityPath = await updateCommunityPath(
-          typeof communityPath === 'string' ? communityPath : undefined
-        );
-        break;
-      case 'update-sentry-dsn':
-        sentryDsn = (await updateSentryDsn(sentryDsn)) || undefined;
+      case 'settings':
+        ({communityPath, sentryDsn} = await settings(communityPath, sentryDsn));
         break;
       case 'exit':
         running = false;
