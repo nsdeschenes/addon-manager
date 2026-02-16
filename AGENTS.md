@@ -13,6 +13,11 @@ addon-manager/
 
 ```
 
+## Plan Mode
+
+- Make the plan extremely concise. Sacrifice grammar for the sake of concision.
+- At the end of each plan, give me a list of unresolved questions to answer, if any.
+
 ## Addon Manager Tech Stack
 
 - **Language**: TypeScript
@@ -26,10 +31,16 @@ addon-manager/
 
 ## Commands
 
-### Dev setup
+### Dev setup and running
 
 ```bash
 bun run start
+```
+
+### Building
+
+```bash
+bun run build
 ```
 
 ### Testing
@@ -38,7 +49,26 @@ bun run start
 bun run test
 ```
 
-## Plan Mode
+### Type checking
 
-- Make the plan extremely concise. Sacrifice grammar for the sake of concision.
-- At the end of each plan, give me a list of unresolved questions to answer, if any.
+```bash
+bun run typecheck
+```
+
+### Linting
+
+```bash
+bun run lint
+```
+
+### Formatting
+
+```bash
+bun run format
+```
+
+### Fixing linting and formatting errors
+
+```bash
+bun run fix
+```

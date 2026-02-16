@@ -14,6 +14,7 @@
     "lint": "bun run lint:ts && bun run lint:prettier",
     "lint:ts": "eslint",
     "lint:prettier": "prettier \"**/*{.ts}\" --check --log-level=error --experimental-cli --no-cache",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "fix": "bun run fix:lint && bun run fix:format",
     "fix:lint": "eslint --fix",
     "fix:format": "prettier \"**/*{.ts}\" --write --log-level=error --experimental-cli --no-cache",
