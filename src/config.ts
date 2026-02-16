@@ -10,6 +10,7 @@ import type {Addon} from './types';
 
 const ConfigSchema = z.object({
   communityPath: z.string(),
+  sentryDsn: z.string().optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
