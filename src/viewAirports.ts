@@ -1,4 +1,5 @@
 import {autocomplete, box, cancel, isCancel} from '@clack/prompts';
+import * as Sentry from '@sentry/bun';
 
 import {renderAddon} from './utils/renderAddon';
 import {wrapWithSpan} from './sentry';
@@ -10,6 +11,9 @@ export const viewAirports = wrapWithSpan(
     const airports = addons.flatMap(addon =>
       addon.items.filter(item => /airport/i.test(item.type)).map(item => item.content)
     );
+
+    Sentry.metrics.count('airports_found', airports.length);
+    Sentry.metrics.gauge('total_airports', airports.length);
 
     const airport = await autocomplete({
       message: 'Select airports to view',
