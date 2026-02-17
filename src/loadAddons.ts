@@ -78,12 +78,14 @@ export const loadAddons = wrapWithSpan(
         task: wrapWithSpan({spanName: 'load-addons', op: 'cli.task'}, async () => {
           const errors: string[] = [];
           const newAddons: Addon[] = [];
+          let loadErrors = 0;
 
           for (const addon of foundAddonsPaths) {
             const manifest = await fs.readFile(addon.manifestPath, 'utf-8');
             const manifestJson = ManifestSchema.safeParse(JSON.parse(manifest));
 
             if (!manifestJson.success) {
+              loadErrors++;
               errors.push(
                 `${addon.directory} - Manifest is invalid: ${manifestJson.error.message}`
               );
@@ -96,6 +98,7 @@ export const loadAddons = wrapWithSpan(
             );
 
             if (!contentHistoryJson.success) {
+              loadErrors++;
               errors.push(
                 `${addon.directory} - Content history is invalid: ${contentHistoryJson.error.message}`
               );
@@ -118,6 +121,11 @@ export const loadAddons = wrapWithSpan(
           }
 
           addons = newAddons;
+
+          Sentry.metrics.count('addons_loaded', newAddons.length);
+          Sentry.metrics.count('addons_load_errors', loadErrors);
+          Sentry.metrics.gauge('total_addons', newAddons.length);
+          Sentry.metrics.distribution('addon_count_per_load', newAddons.length);
 
           return 'Loaded addon data from your community directory';
         }),
