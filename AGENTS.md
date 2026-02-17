@@ -64,7 +64,7 @@ bun run lint
 ### Formatting
 
 ```bash
-bun run format
+bun run fix
 ```
 
 ### Fixing linting and formatting errors
