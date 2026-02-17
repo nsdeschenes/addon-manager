@@ -1,4 +1,5 @@
 import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
+import * as Sentry from '@sentry/bun';
 
 import {loadAddonsFromCache, readConfig} from './config';
 import {loadAddons} from './loadAddons';
@@ -31,6 +32,9 @@ async function main() {
   const cachedAddons = await loadAddonsFromCache();
   if (cachedAddons) {
     addons = cachedAddons;
+    Sentry.metrics.count('cache_hit');
+  } else {
+    Sentry.metrics.count('cache_miss');
   }
 
   let running = true;
@@ -68,6 +72,12 @@ async function main() {
         },
       ],
     });
+
+    if (typeof selectedOption === 'string') {
+      Sentry.metrics.count('command_selected', 1, {
+        attributes: {command: selectedOption},
+      });
+    }
 
     switch (selectedOption) {
       case 'view-addons':
