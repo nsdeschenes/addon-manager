@@ -1,4 +1,5 @@
 import {cancel, isCancel, select} from '@clack/prompts';
+import * as Sentry from '@sentry/bun';
 
 import {wrapWithSpan} from './sentry';
 import {updateCommunityPath} from './updateCommunityPath';
@@ -43,6 +44,8 @@ export const settings = wrapWithSpan(
         cancel('Returning to main menu.');
         break;
       }
+
+      Sentry.logger.info(Sentry.logger.fmt`Settings option selected: ${selectedOption}`);
 
       switch (selectedOption) {
         case 'update-community-path':

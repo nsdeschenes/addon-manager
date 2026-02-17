@@ -1,4 +1,5 @@
 import {cancel, isCancel, text} from '@clack/prompts';
+import * as Sentry from '@sentry/bun';
 
 import {readConfig, writeConfig} from './config';
 import {wrapWithSpan} from './sentry';
@@ -14,6 +15,7 @@ export const updateSentryDsn = wrapWithSpan(
     });
 
     if (isCancel(dsn)) {
+      Sentry.logger.warn('Sentry DSN update cancelled');
       cancel('Sentry DSN update cancelled. Existing value will be kept.');
       return defaultValue ?? '';
     }
@@ -27,6 +29,9 @@ export const updateSentryDsn = wrapWithSpan(
       sentryDsn: trimmed || undefined,
     });
 
+    Sentry.logger.info(
+      Sentry.logger.fmt`Sentry DSN updated: ${trimmed ? 'set' : 'cleared'}`
+    );
     return trimmed;
   }
 );
