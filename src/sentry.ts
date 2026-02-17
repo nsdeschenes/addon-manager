@@ -11,8 +11,11 @@ export async function withTelemetry<T>(
 ): Promise<T> {
   const client = initSentry(sentryDsn);
   if (!client?.getOptions().enabled) {
+    Sentry.logger.info('Sentry telemetry disabled');
     return callback();
   }
+
+  Sentry.logger.info('Sentry telemetry enabled');
 
   Sentry.startSession();
   Sentry.captureSession();
@@ -22,6 +25,7 @@ export async function withTelemetry<T>(
       callback()
     );
   } catch (e) {
+    Sentry.logger.error('Unhandled exception captured');
     Sentry.captureException(e);
     const session = Sentry.getCurrentScope().getSession();
     if (session) {
@@ -85,6 +89,7 @@ function initSentry(dsn: string | undefined) {
     sampleRate: 1,
     tracePropagationTargets: [],
 
+    enableLogs: true,
     enableMetrics: true,
 
     beforeSendTransaction: tx => {
