@@ -18,7 +18,7 @@ interface AddonPaths {
 
 export const loadAddons = wrapWithSpan(
   {spanName: 'load-addons', op: 'cli.command'},
-  async function (addons: Addon[], communityPath: string | symbol) {
+  async function (communityPath: string | symbol) {
     const foundAddonsPaths: AddonPaths[] = [];
     const newAddons: Addon[] = [];
 
