@@ -97,7 +97,7 @@ async function main() {
         await viewAirports(addons);
         break;
       case 'load-addons':
-        await loadAddons(addons, communityPath);
+        addons = await loadAddons(addons, communityPath);
         break;
       case 'settings':
         ({communityPath, sentryDsn} = await settings(communityPath, sentryDsn));
