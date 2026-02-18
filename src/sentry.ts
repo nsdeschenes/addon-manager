@@ -4,6 +4,7 @@
  */
 
 import * as Sentry from '@sentry/bun';
+
 import packageJson from '../package.json';
 
 declare const __APP_VERSION__: string;
@@ -79,7 +80,9 @@ export function wrapWithSpan<T extends (...args: any[]) => any>(
 
 function initSentry(dsn: string | undefined) {
   const version =
-    typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : `${packageJson.version}-dev`;
+    typeof __APP_VERSION__ !== 'undefined'
+      ? __APP_VERSION__
+      : `${packageJson.version}-dev`;
   const environment = typeof __APP_ENV__ !== 'undefined' ? __APP_ENV__ : 'development';
   const enabled = !!dsn;
 
