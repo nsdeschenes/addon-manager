@@ -18,8 +18,9 @@ interface AddonPaths {
 
 export const loadAddons = wrapWithSpan(
   {spanName: 'load-addons', op: 'cli.command'},
-  async function (addons: Addon[], communityPath: string | symbol) {
+  async function (communityPath: string | symbol) {
     const foundAddonsPaths: AddonPaths[] = [];
+    const newAddons: Addon[] = [];
 
     await tasks([
       {
@@ -84,7 +85,6 @@ export const loadAddons = wrapWithSpan(
         title: 'Loading Addons',
         task: wrapWithSpan({spanName: 'load-addons', op: 'cli.task'}, async () => {
           const errors: string[] = [];
-          const newAddons: Addon[] = [];
           let loadErrors = 0;
 
           for (const addon of foundAddonsPaths) {
@@ -133,8 +133,6 @@ export const loadAddons = wrapWithSpan(
             });
           }
 
-          addons = newAddons;
-
           Sentry.logger.info(
             Sentry.logger
               .fmt`Load complete: ${newAddons.length} loaded, ${loadErrors} errors`
@@ -151,6 +149,8 @@ export const loadAddons = wrapWithSpan(
     ]);
 
     // Save addons to cache after loading
-    await saveAddons(addons);
+    await saveAddons(newAddons);
+
+    return newAddons;
   }
 );
