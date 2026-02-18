@@ -5,6 +5,11 @@
 
 import * as Sentry from '@sentry/bun';
 
+import packageJson from '../package.json';
+
+declare const __APP_VERSION__: string;
+declare const __APP_ENV__: string;
+
 export async function withTelemetry<T>(
   sentryDsn: string | undefined,
   callback: () => T | Promise<T>
@@ -74,8 +79,11 @@ export function wrapWithSpan<T extends (...args: any[]) => any>(
 }
 
 function initSentry(dsn: string | undefined) {
-  const version = '0.0.0-dev';
-  const environment = 'development';
+  const version =
+    typeof __APP_VERSION__ !== 'undefined'
+      ? __APP_VERSION__
+      : `${packageJson.version}-dev`;
+  const environment = typeof __APP_ENV__ !== 'undefined' ? __APP_ENV__ : 'development';
   const enabled = !!dsn;
 
   const client = Sentry.init({
