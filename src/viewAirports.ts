@@ -12,6 +12,7 @@ export const viewAirports = wrapWithSpan(
       addon.items.filter(item => /airport/i.test(item.type)).map(item => item.content)
     );
 
+    Sentry.logger.info(Sentry.logger.fmt`Airports found: ${airports.length}`);
     Sentry.metrics.count('airports_found', airports.length);
     Sentry.metrics.gauge('total_airports', airports.length);
 
@@ -33,6 +34,7 @@ export const viewAirports = wrapWithSpan(
       a.items.some(item => item.content === airport)
     )!;
 
+    Sentry.logger.info(Sentry.logger.fmt`Airport selected: ${airport}`);
     const title = `${selectedAddon.title} - ${selectedAddon.packageName}`;
     box(renderAddon(selectedAddon), title);
   }

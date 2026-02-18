@@ -1,4 +1,5 @@
 import {autocomplete, box, cancel, isCancel} from '@clack/prompts';
+import * as Sentry from '@sentry/bun';
 
 import {renderAddon} from './utils/renderAddon';
 import {wrapWithSpan} from './sentry';
@@ -23,6 +24,7 @@ export const viewAddons = wrapWithSpan(
 
     const selectedAddon = addons.find(a => a.packageName === addon)!;
 
+    Sentry.logger.info(Sentry.logger.fmt`Addon selected: ${selectedAddon.packageName}`);
     box(renderAddon(selectedAddon), selectedAddon.packageName);
 
     return addon;

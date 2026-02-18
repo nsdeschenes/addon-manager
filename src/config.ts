@@ -3,6 +3,7 @@ import {homedir} from 'node:os';
 import {join} from 'node:path';
 
 import {cancel} from '@clack/prompts';
+import * as Sentry from '@sentry/bun';
 import {z} from 'zod';
 
 import {toYaml} from './utils/jsonToYaml';
@@ -26,23 +27,28 @@ export async function readConfig(initial?: boolean): Promise<Config | null> {
     const validated = ConfigSchema.safeParse(parsed);
 
     if (!validated.success) {
+      Sentry.logger.warn('Invalid config file format');
       if (initial) {
         cancel('Invalid config file format');
       }
       return null;
     }
 
+    Sentry.logger.info('Config read successfully');
     return validated.data;
   } catch (error) {
     if (error instanceof Error && ('code' in error ? error.code === 'ENOENT' : false)) {
       // File doesn't exist, which is fine
+      Sentry.logger.warn('Config file not found (ENOENT)');
       return null;
     }
 
     // Other errors (permission, invalid JSON, etc.)
     if (error instanceof SyntaxError) {
+      Sentry.logger.error('Config file contains invalid JSON');
       cancel(`Config file contains invalid JSON: ${error.message}`);
     } else {
+      Sentry.logger.error('Config read failure');
       cancel(`Error reading config file: ${error}`);
     }
     return null;
@@ -56,7 +62,9 @@ export async function writeConfig(config: Config): Promise<void> {
 
     // Write config file
     await fs.writeFile(CONFIG_FILE, toYaml(config), 'utf-8');
+    Sentry.logger.info('Config written successfully');
   } catch (error) {
+    Sentry.logger.error('Config write failure');
     cancel(`Error writing config file: ${error}`);
     // Don't throw - graceful degradation
   }
@@ -88,7 +96,9 @@ export async function saveAddons(addons: Addon[]): Promise<void> {
       encoding: 'utf-8',
       flag: 'w',
     });
+    Sentry.logger.info(Sentry.logger.fmt`Addon cache saved, ${addons.length} addons`);
   } catch (error) {
+    Sentry.logger.error('Addon cache save failure');
     cancel(`Error writing addons file: ${error}`);
     // Don't throw - graceful degradation
   }
@@ -101,9 +111,13 @@ export async function loadAddonsFromCache(): Promise<Addon[] | null> {
     const validated = z.array(AddonSchema).safeParse(parsed);
 
     if (!validated.success) {
+      Sentry.logger.warn('Invalid addon cache format');
       return null;
     }
 
+    Sentry.logger.info(
+      Sentry.logger.fmt`Addon cache loaded, ${validated.data.length} addons`
+    );
     return validated.data;
   } catch (error) {
     if (error instanceof Error && ('code' in error ? error.code === 'ENOENT' : false)) {

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 
 import {cancel, isCancel, text} from '@clack/prompts';
+import * as Sentry from '@sentry/bun';
 
 import {readConfig, writeConfig} from './config';
 import {wrapWithSpan} from './sentry';
@@ -24,6 +25,7 @@ export const updateCommunityPath = wrapWithSpan(
     });
 
     if (isCancel(communityPath)) {
+      Sentry.logger.warn('Community path update cancelled');
       cancel('Community path update cancelled. Existing value will be kept.');
       return defaultValue ?? '';
     }
@@ -32,6 +34,7 @@ export const updateCommunityPath = wrapWithSpan(
       const stats = await fs.stat(communityPath);
 
       if (!stats.isDirectory()) {
+        Sentry.logger.warn('Invalid path: not a directory');
         return 'Path must be an existing directory';
       }
     } catch (error: unknown) {
@@ -41,9 +44,11 @@ export const updateCommunityPath = wrapWithSpan(
         'code' in error &&
         (error as {code?: string}).code === 'ENOENT'
       ) {
+        Sentry.logger.warn('Invalid path: directory does not exist');
         return 'Directory does not exist';
       }
 
+      Sentry.logger.warn('Invalid path: unable to access directory');
       return 'Unable to access directory';
     }
 
@@ -51,6 +56,7 @@ export const updateCommunityPath = wrapWithSpan(
     const existing = await readConfig();
     await writeConfig({...existing, communityPath: String(communityPath)});
 
+    Sentry.logger.info('Community path updated successfully');
     return String(communityPath);
   }
 );

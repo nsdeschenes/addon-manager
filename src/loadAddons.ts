@@ -32,6 +32,10 @@ export const loadAddons = wrapWithSpan(
               .then(() => true)
               .catch(() => false);
 
+            Sentry.logger.info(
+              Sentry.logger.fmt`Community path accessible: ${directoryAccessible}`
+            );
+
             if (!directoryAccessible) {
               cancel('Directory is not accessible');
               process.exit(1);
@@ -70,6 +74,9 @@ export const loadAddons = wrapWithSpan(
             });
           }
 
+          Sentry.logger.info(
+            Sentry.logger.fmt`Discovered ${foundAddonsPaths.length} addon directories`
+          );
           return 'Found addons in your community directory';
         }),
       },
@@ -86,6 +93,9 @@ export const loadAddons = wrapWithSpan(
 
             if (!manifestJson.success) {
               loadErrors++;
+              Sentry.logger.warn(
+                Sentry.logger.fmt`Manifest parse failure: ${addon.directory}`
+              );
               errors.push(
                 `${addon.directory} - Manifest is invalid: ${manifestJson.error.message}`
               );
@@ -99,6 +109,9 @@ export const loadAddons = wrapWithSpan(
 
             if (!contentHistoryJson.success) {
               loadErrors++;
+              Sentry.logger.warn(
+                Sentry.logger.fmt`Content history parse failure: ${addon.directory}`
+              );
               errors.push(
                 `${addon.directory} - Content history is invalid: ${contentHistoryJson.error.message}`
               );
@@ -121,6 +134,11 @@ export const loadAddons = wrapWithSpan(
           }
 
           addons = newAddons;
+
+          Sentry.logger.info(
+            Sentry.logger
+              .fmt`Load complete: ${newAddons.length} loaded, ${loadErrors} errors`
+          );
 
           Sentry.metrics.count('addons_loaded', newAddons.length);
           Sentry.metrics.count('addons_load_errors', loadErrors);

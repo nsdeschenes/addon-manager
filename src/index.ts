@@ -24,6 +24,11 @@ async function main() {
   }
   sentryDsn = config?.sentryDsn;
 
+  Sentry.logger.info(
+    Sentry.logger
+      .fmt`Config loaded, community path ${config?.communityPath ? 'set' : 'unset'}`
+  );
+
   if (communityPath === undefined) {
     communityPath = await updateCommunityPath();
   }
@@ -32,8 +37,12 @@ async function main() {
   const cachedAddons = await loadAddonsFromCache();
   if (cachedAddons) {
     addons = cachedAddons;
+    Sentry.logger.info(
+      Sentry.logger.fmt`Addon cache hit, ${cachedAddons.length} addons loaded`
+    );
     Sentry.metrics.count('cache_hit');
   } else {
+    Sentry.logger.info('Addon cache miss');
     Sentry.metrics.count('cache_miss');
   }
 
@@ -74,6 +83,7 @@ async function main() {
     });
 
     if (typeof selectedOption === 'string') {
+      Sentry.logger.info(Sentry.logger.fmt`Command selected: ${selectedOption}`);
       Sentry.metrics.count('command_selected', 1, {
         attributes: {command: selectedOption},
       });
@@ -97,6 +107,7 @@ async function main() {
         break;
       default:
         if (isCancel(selectedOption)) {
+          Sentry.logger.warn('Main menu cancelled');
           cancel('No option selected');
           running = false;
           break;
@@ -106,6 +117,7 @@ async function main() {
     }
   }
 
+  Sentry.logger.info('App exiting');
   outro('Thank you for using Addon Manager, and have a safe flight ✈️');
 }
 
