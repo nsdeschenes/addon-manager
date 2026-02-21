@@ -46,6 +46,7 @@ export const saveAirports = wrapWithSpan(
     } catch (error) {
       Sentry.logger.error('Airport data save failure');
       Sentry.captureException(error);
+      throw error;
     }
   }
 );
