@@ -39,7 +39,7 @@ async function main() {
   await migrateFromJson();
 
   // Load addons from cache on startup
-  const cachedAddons = loadAddonsFromCache();
+  const cachedAddons = await loadAddonsFromCache();
   if (cachedAddons) {
     addons = cachedAddons;
     Sentry.logger.info(

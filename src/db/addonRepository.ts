@@ -1,13 +1,15 @@
 import * as Sentry from '@sentry/bun';
 import {eq} from 'drizzle-orm';
 
+import {wrapWithSpan} from '../sentry';
 import type {Addon} from '../types';
 
 import {getDb} from './index';
 import {addonItems, addons} from './schema';
 
-export async function saveAddons(newAddons: Addon[]): Promise<void> {
-  return Sentry.startSpan({name: 'save-addons', op: 'db.transaction'}, () => {
+export const saveAddons = wrapWithSpan(
+  {spanName: 'save-addons', op: 'db.transaction'},
+  function (newAddons: Addon[]): void {
     try {
       const db = getDb();
 
@@ -59,11 +61,12 @@ export async function saveAddons(newAddons: Addon[]): Promise<void> {
       Sentry.logger.error('Addon cache save failure');
       Sentry.captureException(error);
     }
-  });
-}
+  }
+);
 
-export function loadAddonsFromCache(): Addon[] | null {
-  return Sentry.startSpan({name: 'load-addons-from-cache', op: 'db.query'}, () => {
+export const loadAddonsFromCache = wrapWithSpan(
+  {spanName: 'load-addons-from-cache', op: 'db.query'},
+  function (): Addon[] | null {
     try {
       const db = getDb();
 
@@ -104,5 +107,5 @@ export function loadAddonsFromCache(): Addon[] | null {
       Sentry.captureException(error);
       return null;
     }
-  });
-}
+  }
+);

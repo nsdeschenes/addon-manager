@@ -28,8 +28,8 @@ describe('addonRepository', () => {
     getDb(sqlite);
   });
 
-  test('empty DB returns null', () => {
-    const result = loadAddonsFromCache();
+  test('empty DB returns null', async () => {
+    const result = await loadAddonsFromCache();
     expect(result).toBeNull();
   });
 
@@ -40,7 +40,7 @@ describe('addonRepository', () => {
     ];
 
     await saveAddons(addons);
-    const loaded = loadAddonsFromCache();
+    const loaded = await loadAddonsFromCache();
 
     expect(loaded).not.toBeNull();
     expect(loaded).toHaveLength(2);
@@ -58,7 +58,7 @@ describe('addonRepository', () => {
       makeAddon({packageName: 'second-b'}),
     ]);
 
-    const loaded = loadAddonsFromCache();
+    const loaded = await loadAddonsFromCache();
     expect(loaded).toHaveLength(2);
     expect(loaded![0]!.packageName).toBe('second-a');
     expect(loaded![1]!.packageName).toBe('second-b');
@@ -73,12 +73,12 @@ describe('addonRepository', () => {
     ]);
 
     // Verify items exist
-    let loaded = loadAddonsFromCache();
+    let loaded = await loadAddonsFromCache();
     expect(loaded![0]!.items).toHaveLength(1);
 
     // Save empty set (deletes all addons)
     await saveAddons([]);
-    loaded = loadAddonsFromCache();
+    loaded = await loadAddonsFromCache();
     expect(loaded).toBeNull();
   });
 });

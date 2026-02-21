@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/bun';
 import {Database} from 'bun:sqlite';
 import {drizzle} from 'drizzle-orm/bun-sqlite';
 
+import {wrapWithSpan} from '../sentry';
 import type {Addon} from '../types';
 
 import * as schema from './schema';
@@ -65,36 +66,34 @@ export function resetDb() {
 /**
  * One-time migration: if addons.json exists, import into SQLite and delete the file.
  */
-export async function migrateFromJson() {
-  return Sentry.startSpan(
-    {name: 'migrate-json-to-sqlite', op: 'db.migration'},
-    async () => {
-      try {
-        const content = await fs.readFile(LEGACY_ADDONS_FILE, 'utf-8');
-        const addons: Addon[] = JSON.parse(content);
+export const migrateFromJson = wrapWithSpan(
+  {spanName: 'migrate-json-to-sqlite', op: 'db.migration'},
+  async function () {
+    try {
+      const content = await fs.readFile(LEGACY_ADDONS_FILE, 'utf-8');
+      const addons: Addon[] = JSON.parse(content);
 
-        if (Array.isArray(addons) && addons.length > 0) {
-          const {saveAddons} = await import('./addonRepository');
-          await saveAddons(addons);
-          Sentry.logger.info(
-            Sentry.logger.fmt`Migrated ${addons.length} addons from JSON to SQLite`
-          );
-          Sentry.metrics.count('json_migration_addons', addons.length);
-        }
-
-        await fs.unlink(LEGACY_ADDONS_FILE);
-        Sentry.logger.info('Deleted legacy addons.json');
-        Sentry.metrics.count('json_migration_completed');
-      } catch (error) {
-        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
-          // No JSON file to migrate — expected case
-          Sentry.logger.trace('No legacy addons.json found, skipping migration');
-          return;
-        }
-        Sentry.logger.warn('JSON migration failed, skipping');
-        Sentry.captureException(error);
-        Sentry.metrics.count('json_migration_failed');
+      if (Array.isArray(addons) && addons.length > 0) {
+        const {saveAddons} = await import('./addonRepository');
+        await saveAddons(addons);
+        Sentry.logger.info(
+          Sentry.logger.fmt`Migrated ${addons.length} addons from JSON to SQLite`
+        );
+        Sentry.metrics.count('json_migration_addons', addons.length);
       }
+
+      await fs.unlink(LEGACY_ADDONS_FILE);
+      Sentry.logger.info('Deleted legacy addons.json');
+      Sentry.metrics.count('json_migration_completed');
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        // No JSON file to migrate — expected case
+        Sentry.logger.trace('No legacy addons.json found, skipping migration');
+        return;
+      }
+      Sentry.logger.warn('JSON migration failed, skipping');
+      Sentry.captureException(error);
+      Sentry.metrics.count('json_migration_failed');
     }
-  );
-}
+  }
+);
