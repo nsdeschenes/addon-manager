@@ -3,8 +3,8 @@ import fs from 'node:fs/promises';
 import {cancel, tasks} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
 
+import {saveAddons} from './db/addonRepository';
 import {searchForFile} from './utils/searchForFile';
-import {saveAddons} from './config';
 import {CONTENT_HISTORY_FILE_NAME, MANIFEST_FILE_NAME} from './constants';
 import {ContentHistorySchema, ManifestSchema} from './schema';
 import {wrapWithSpan} from './sentry';

@@ -1,7 +1,9 @@
 import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
 
-import {loadAddonsFromCache, readConfig} from './config';
+import {loadAddonsFromCache} from './db/addonRepository';
+import {closeDb, migrateFromJson} from './db/index';
+import {readConfig} from './config';
 import {loadAddons} from './loadAddons';
 import {withTelemetry} from './sentry';
 import {settings} from './settings';
@@ -32,6 +34,9 @@ async function main() {
   if (communityPath === undefined) {
     communityPath = await updateCommunityPath();
   }
+
+  // Migrate legacy JSON cache to SQLite (one-time, no-op if already migrated)
+  await migrateFromJson();
 
   // Load addons from cache on startup
   const cachedAddons = await loadAddonsFromCache();
@@ -117,6 +122,7 @@ async function main() {
     }
   }
 
+  closeDb();
   Sentry.logger.info('App exiting');
   outro('Thank you for using Addon Manager, and have a safe flight ✈️');
 }
