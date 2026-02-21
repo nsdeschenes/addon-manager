@@ -65,7 +65,12 @@ describe('addonRepository', () => {
   });
 
   test('addon items cascade with parent addon deletion', async () => {
-    await saveAddons([makeAddon({packageName: 'cascade-test', items: [{type: 'a', content: 'b', revision: 1}]})]);
+    await saveAddons([
+      makeAddon({
+        packageName: 'cascade-test',
+        items: [{type: 'a', content: 'b', revision: 1}],
+      }),
+    ]);
 
     // Verify items exist
     let loaded = loadAddonsFromCache();

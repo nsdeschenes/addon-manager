@@ -1,7 +1,8 @@
 import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
 
-import {loadAddonsFromCache, readConfig} from './config';
+import {loadAddonsFromCache} from './db/addonRepository';
+import {readConfig} from './config';
 import {loadAddons} from './loadAddons';
 import {withTelemetry} from './sentry';
 import {settings} from './settings';

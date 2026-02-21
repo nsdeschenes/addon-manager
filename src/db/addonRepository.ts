@@ -1,5 +1,5 @@
-import {eq} from 'drizzle-orm';
 import * as Sentry from '@sentry/bun';
+import {eq} from 'drizzle-orm';
 
 import type {Addon} from '../types';
 
