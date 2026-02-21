@@ -63,6 +63,7 @@ export function getDb(sqliteDb?: Database) {
 export function closeDb() {
   if (sqlite) {
     Sentry.logger.info('Closing SQLite database');
+    sqlite.run('PRAGMA wal_checkpoint(TRUNCATE)');
     sqlite.close();
     sqlite = null;
     db = null;
