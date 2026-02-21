@@ -1,13 +1,18 @@
-import {Database} from 'bun:sqlite';
+import fs from 'node:fs/promises';
 import {homedir} from 'node:os';
 import {join} from 'node:path';
 
+import * as Sentry from '@sentry/bun';
+import {Database} from 'bun:sqlite';
 import {drizzle} from 'drizzle-orm/bun-sqlite';
+
+import type {Addon} from '../types';
 
 import * as schema from './schema';
 
 const CONFIG_DIR = join(homedir(), '.addon-manager');
 const DB_PATH = join(CONFIG_DIR, 'addons.db');
+const LEGACY_ADDONS_FILE = join(CONFIG_DIR, 'addons.json');
 
 let db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
@@ -49,4 +54,31 @@ export function getDb(sqliteDb?: Database) {
 /** Reset the singleton — used by tests */
 export function resetDb() {
   db = null;
+}
+
+/**
+ * One-time migration: if addons.json exists, import into SQLite and delete the file.
+ */
+export async function migrateFromJson() {
+  try {
+    const content = await fs.readFile(LEGACY_ADDONS_FILE, 'utf-8');
+    const addons: Addon[] = JSON.parse(content);
+
+    if (Array.isArray(addons) && addons.length > 0) {
+      const {saveAddons} = await import('./addonRepository');
+      await saveAddons(addons);
+      Sentry.logger.info(
+        Sentry.logger.fmt`Migrated ${addons.length} addons from JSON to SQLite`
+      );
+    }
+
+    await fs.unlink(LEGACY_ADDONS_FILE);
+    Sentry.logger.info('Deleted legacy addons.json');
+  } catch (error) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+      // No JSON file to migrate — expected case
+      return;
+    }
+    Sentry.logger.warn('JSON migration failed, skipping');
+  }
 }

@@ -2,6 +2,7 @@ import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
 
 import {loadAddonsFromCache} from './db/addonRepository';
+import {migrateFromJson} from './db/index';
 import {readConfig} from './config';
 import {loadAddons} from './loadAddons';
 import {withTelemetry} from './sentry';
@@ -34,8 +35,11 @@ async function main() {
     communityPath = await updateCommunityPath();
   }
 
+  // Migrate legacy JSON cache to SQLite (one-time, no-op if already migrated)
+  await migrateFromJson();
+
   // Load addons from cache on startup
-  const cachedAddons = await loadAddonsFromCache();
+  const cachedAddons = loadAddonsFromCache();
   if (cachedAddons) {
     addons = cachedAddons;
     Sentry.logger.info(
