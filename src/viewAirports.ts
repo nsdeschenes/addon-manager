@@ -66,6 +66,23 @@ export const viewAirports = wrapWithSpan(
       titleParts.push('-', airportInfo.name);
     }
 
-    box(renderAddon(selectedAddon), titleParts.join(' '));
+    const sections = [renderAddon(selectedAddon)];
+
+    if (airportInfo) {
+      const lines = [
+        'Airport Details:',
+        `  Name: ${airportInfo.name}`,
+        `  ICAO: ${airportInfo.icaoCode ?? 'N/A'}`,
+        `  IATA: ${airportInfo.iataCode ?? 'N/A'}`,
+        `  Type: ${airportInfo.type ?? 'N/A'}`,
+        `  Municipality: ${airportInfo.municipality ?? 'N/A'}`,
+        `  Country: ${airportInfo.isoCountry ?? 'N/A'}`,
+        `  Elevation: ${airportInfo.elevationFt != null ? `${airportInfo.elevationFt} ft` : 'N/A'}`,
+        `  Coordinates: ${airportInfo.latitudeDeg != null && airportInfo.longitudeDeg != null ? `${airportInfo.latitudeDeg}, ${airportInfo.longitudeDeg}` : 'N/A'}`,
+      ];
+      sections.push(lines.join('\n'));
+    }
+
+    box(sections.join('\n'), titleParts.join(' '));
   }
 );
