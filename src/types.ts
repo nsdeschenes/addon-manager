@@ -13,3 +13,17 @@ export interface Addon {
   minimumGameVersion: string;
   items: AddonItem[];
 }
+
+export interface Airport {
+  id?: number;
+  ident: string;
+  type: string | null;
+  name: string;
+  latitudeDeg: number | null;
+  longitudeDeg: number | null;
+  elevationFt: number | null;
+  isoCountry: string | null;
+  municipality: string | null;
+  icaoCode: string | null;
+  iataCode: string | null;
+}

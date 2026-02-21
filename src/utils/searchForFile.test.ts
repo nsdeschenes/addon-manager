@@ -9,7 +9,7 @@ import {searchForFile} from './searchForFile';
 let testDir: string;
 
 beforeEach(async () => {
-  testDir = join(tmpdir(), `searchForFile-test-${Date.now()}-${Math.random()}`);
+  testDir = join(tmpdir(), `searchForFile-test-${performance.now()}-${Math.random()}`);
   await mkdir(testDir, {recursive: true});
 });
 
