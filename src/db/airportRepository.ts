@@ -54,7 +54,10 @@ export const hasAirportData = wrapWithSpan(
   {spanName: 'has-airport-data', op: 'db.query'},
   function (): boolean {
     const db = getDb();
-    const result = db.select({count: sql<number>`count(*)`}).from(airports).get();
+    const result = db
+      .select({count: sql<number>`count(*)`})
+      .from(airports)
+      .get();
     return (result?.count ?? 0) > 0;
   }
 );

@@ -103,7 +103,9 @@ export const loadAirports = wrapWithSpan(
       const csv = await response.text();
       const downloadMs = Date.now() - startTime;
       Sentry.logger.info(Sentry.logger.fmt`Airport CSV downloaded in ${downloadMs}ms`);
-      Sentry.metrics.distribution('airport_download_ms', downloadMs, {unit: 'millisecond'});
+      Sentry.metrics.distribution('airport_download_ms', downloadMs, {
+        unit: 'millisecond',
+      });
 
       s.message('Parsing airport data...');
       const airports = parseAirportsCsv(csv);
