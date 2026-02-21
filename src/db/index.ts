@@ -16,6 +16,7 @@ const DB_PATH = join(CONFIG_DIR, 'addons.db');
 const LEGACY_ADDONS_FILE = join(CONFIG_DIR, 'addons.json');
 
 let db: ReturnType<typeof drizzle<typeof schema>> | null = null;
+let sqlite: Database | null = null;
 
 function createTables(sqlite: Database) {
   sqlite.run(`
@@ -44,7 +45,7 @@ export function getDb(sqliteDb?: Database) {
   if (db) return db;
 
   return Sentry.startSpan({name: 'db-init', op: 'db.init'}, () => {
-    const sqlite = sqliteDb ?? new Database(DB_PATH, {create: true});
+    sqlite = sqliteDb ?? new Database(DB_PATH, {create: true});
     sqlite.run('PRAGMA journal_mode = WAL');
     sqlite.run('PRAGMA foreign_keys = ON');
     createTables(sqlite);
@@ -58,9 +59,14 @@ export function getDb(sqliteDb?: Database) {
   });
 }
 
-/** Reset the singleton — used by tests */
-export function resetDb() {
-  db = null;
+/** Close the database connection and clean up resources */
+export function closeDb() {
+  if (sqlite) {
+    Sentry.logger.info('Closing SQLite database');
+    sqlite.close();
+    sqlite = null;
+    db = null;
+  }
 }
 
 /**

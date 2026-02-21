@@ -2,7 +2,7 @@ import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
 
 import {loadAddonsFromCache} from './db/addonRepository';
-import {migrateFromJson} from './db/index';
+import {closeDb, migrateFromJson} from './db/index';
 import {readConfig} from './config';
 import {loadAddons} from './loadAddons';
 import {withTelemetry} from './sentry';
@@ -122,6 +122,7 @@ async function main() {
     }
   }
 
+  closeDb();
   Sentry.logger.info('App exiting');
   outro('Thank you for using Addon Manager, and have a safe flight ✈️');
 }

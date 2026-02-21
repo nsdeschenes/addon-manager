@@ -3,7 +3,7 @@ import {beforeEach, describe, expect, test} from 'bun:test';
 
 import type {Addon} from '../../types';
 import {loadAddonsFromCache, saveAddons} from '../addonRepository';
-import {getDb, resetDb} from '../index';
+import {closeDb, getDb} from '../index';
 
 function makeAddon(overrides: Partial<Addon> = {}): Addon {
   return {
@@ -23,7 +23,7 @@ function makeAddon(overrides: Partial<Addon> = {}): Addon {
 
 describe('addonRepository', () => {
   beforeEach(() => {
-    resetDb();
+    closeDb();
     const sqlite = new Database(':memory:');
     getDb(sqlite);
   });
