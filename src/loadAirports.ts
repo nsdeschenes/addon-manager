@@ -89,8 +89,8 @@ export const loadAirports = wrapWithSpan(
 
     try {
       s.start('Downloading airport data...');
-
-      const startTime = Date.now();
+      
+      const startTime = performance.now();
       const response = await fetch(AIRPORTS_CSV_URL);
       if (!response.ok) {
         s.stop('Failed to download airport data');
@@ -99,9 +99,9 @@ export const loadAirports = wrapWithSpan(
         );
         return false;
       }
-
+      
       const csv = await response.text();
-      const downloadMs = Date.now() - startTime;
+      const downloadMs = performance.now() - startTime;
       Sentry.logger.info(Sentry.logger.fmt`Airport CSV downloaded in ${downloadMs}ms`);
       Sentry.metrics.distribution('airport_download_ms', downloadMs, {
         unit: 'millisecond',
