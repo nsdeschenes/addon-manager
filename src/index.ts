@@ -2,9 +2,11 @@ import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
 
 import {loadAddonsFromCache} from './db/addonRepository';
+import {hasAirportData} from './db/airportRepository';
 import {closeDb, migrateFromJson} from './db/index';
 import {readConfig} from './config';
 import {loadAddons} from './loadAddons';
+import {loadAirports} from './loadAirports';
 import {withTelemetry} from './sentry';
 import {settings} from './settings';
 import type {Addon} from './types';
@@ -15,6 +17,7 @@ import {viewAirports} from './viewAirports';
 let communityPath: string | symbol;
 let sentryDsn: string | undefined;
 let addons: Addon[] = [];
+let airportsLoaded = false;
 
 async function main() {
   intro('Welcome to Addon Manager ✈️');
@@ -51,6 +54,9 @@ async function main() {
     Sentry.metrics.count('cache_miss');
   }
 
+  // Check if airport data has been loaded previously
+  airportsLoaded = await hasAirportData();
+
   let running = true;
   while (running) {
     const selectedOption = await select({
@@ -66,13 +72,18 @@ async function main() {
           value: 'view-airports',
           label: 'View Airports',
           hint: 'View all airports',
-          disabled: addons.length === 0,
+          disabled: addons.length === 0 || !airportsLoaded,
         },
         {
           value: 'load-addons',
           label: 'Load Addons',
           hint: 'Load addon data from your community directory',
           disabled: communityPath === undefined,
+        },
+        {
+          value: 'load-airports',
+          label: 'Load Airport Data',
+          hint: airportsLoaded ? 'Update airport database' : 'Download airport database',
         },
         {
           value: 'settings',
@@ -103,6 +114,11 @@ async function main() {
         break;
       case 'load-addons':
         addons = await loadAddons(communityPath);
+        break;
+      case 'load-airports':
+        if (await loadAirports()) {
+          airportsLoaded = true;
+        }
         break;
       case 'settings':
         ({communityPath, sentryDsn} = await settings(communityPath, sentryDsn));

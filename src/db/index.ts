@@ -39,6 +39,24 @@ function createTables(sqlite: Database) {
       revision INTEGER NOT NULL
     )
   `);
+  sqlite.run(`
+    CREATE TABLE IF NOT EXISTS airports (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ident TEXT NOT NULL UNIQUE,
+      type TEXT,
+      name TEXT NOT NULL,
+      latitude_deg REAL,
+      longitude_deg REAL,
+      elevation_ft INTEGER,
+      iso_country TEXT,
+      municipality TEXT,
+      icao_code TEXT,
+      iata_code TEXT
+    )
+  `);
+  sqlite.run(`
+    CREATE INDEX IF NOT EXISTS idx_airports_icao_code ON airports(icao_code)
+  `);
 }
 
 export function getDb(sqliteDb?: Database) {
