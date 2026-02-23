@@ -1,8 +1,7 @@
 import {expect, test} from 'bun:test';
 
-import type {Addon} from '../types';
-
-import {renderAddon} from './renderAddon';
+import type {Addon} from '../../types';
+import {renderAddon} from '../renderAddon';
 
 test('renders addon with all fields', () => {
   const addon: Addon = {
