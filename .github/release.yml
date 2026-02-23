@@ -4,3 +4,4 @@ changelog:
       - skip-changelog
       - ci
       - dependencies
+      - maintenance
