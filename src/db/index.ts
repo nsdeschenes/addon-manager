@@ -9,13 +9,13 @@ import {drizzle} from 'drizzle-orm/bun-sqlite';
 import {wrapWithSpan} from '../sentry';
 import type {Addon} from '../types';
 
-import * as schema from './schema';
+import {relations} from './relations';
 
 const CONFIG_DIR = join(homedir(), '.addon-manager');
 const DB_PATH = join(CONFIG_DIR, 'addons.db');
 const LEGACY_ADDONS_FILE = join(CONFIG_DIR, 'addons.json');
 
-let db: ReturnType<typeof drizzle<typeof schema>> | null = null;
+let db: ReturnType<typeof drizzle<typeof relations>> | null = null;
 let sqlite: Database | null = null;
 
 function createTables(sqlite: Database) {
@@ -72,7 +72,7 @@ export function getDb(sqliteDb?: Database) {
       Sentry.logger.fmt`SQLite database initialized at ${sqliteDb ? ':memory:' : DB_PATH}`
     );
 
-    db = drizzle(sqlite, {schema});
+    db = drizzle(sqlite, {relations});
     return db;
   });
 }
