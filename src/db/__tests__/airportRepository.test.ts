@@ -52,7 +52,9 @@ describe('airportRepository', () => {
 
       const results = await getAirportsByIcaoCodes(['EGLL', 'YSSY', 'KJFK']);
       expect(results).toHaveLength(2);
-      expect(results.map(r => r.icaoCode)).toEqual(expect.arrayContaining(['EGLL', 'YSSY']));
+      expect(results.map(r => r.icaoCode)).toEqual(
+        expect.arrayContaining(['EGLL', 'YSSY'])
+      );
     });
 
     test('saves airports with nullable fields', async () => {
@@ -96,7 +98,9 @@ describe('airportRepository', () => {
 
       const results = await getAirportsByIcaoCodes(['KJFK', 'KLAX']);
       expect(results).toHaveLength(2);
-      expect(results.map(r => r.icaoCode)).toEqual(expect.arrayContaining(['KJFK', 'KLAX']));
+      expect(results.map(r => r.icaoCode)).toEqual(
+        expect.arrayContaining(['KJFK', 'KLAX'])
+      );
     });
 
     test('returns only matched airports when some codes have no match', async () => {
