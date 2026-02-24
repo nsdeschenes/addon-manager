@@ -15,4 +15,5 @@ export const relations = defineRelations(schema, r => ({
       to: r.addons.id,
     }),
   },
+  airports: {},
 }));
