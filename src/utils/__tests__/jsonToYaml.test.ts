@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'bun:test';
 
-import {toYaml} from './jsonToYaml';
+import {toYaml} from '../jsonToYaml';
 
 describe('toYaml - scalars', () => {
   test('serializes null, booleans, and numbers', () => {

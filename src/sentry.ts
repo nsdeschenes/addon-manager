@@ -107,7 +107,7 @@ function initSentry(dsn: string | undefined) {
 
     beforeSend: event => {
       // Replace home directory with ~ in stack traces to remove PII
-      const homeDir = process.env.HOME || process.env.USERPROFILE;
+      const homeDir = process.env?.['HOME'] ?? process.env?.['USERPROFILE'];
       for (const exception of event.exception?.values ?? []) {
         if (!exception.stacktrace?.frames) {
           continue;

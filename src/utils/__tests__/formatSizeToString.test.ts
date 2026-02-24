@@ -1,6 +1,6 @@
 import {expect, test} from 'bun:test';
 
-import {formatSizeToString} from './formatSizeToString';
+import {formatSizeToString} from '../formatSizeToString';
 
 test('formats bytes (< 1000)', () => {
   expect(formatSizeToString(0)).toBe('0B');

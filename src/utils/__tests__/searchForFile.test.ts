@@ -4,7 +4,7 @@ import {join} from 'node:path';
 
 import {afterEach, beforeEach, expect, test} from 'bun:test';
 
-import {searchForFile} from './searchForFile';
+import {searchForFile} from '../searchForFile';
 
 let testDir: string;
 

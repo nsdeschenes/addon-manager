@@ -1,5 +1,7 @@
+import assert from 'assert';
+
 import {Database} from 'bun:sqlite';
-import {beforeEach, describe, expect, test} from 'bun:test';
+import {afterEach, beforeEach, describe, expect, test} from 'bun:test';
 
 import type {Addon} from '../../types';
 import {loadAddonsFromCache, saveAddons} from '../addonRepository';
@@ -23,9 +25,12 @@ function makeAddon(overrides: Partial<Addon> = {}): Addon {
 
 describe('addonRepository', () => {
   beforeEach(() => {
-    closeDb();
     const sqlite = new Database(':memory:');
     getDb(sqlite);
+  });
+
+  afterEach(() => {
+    closeDb();
   });
 
   test('empty DB returns null', async () => {
@@ -44,11 +49,18 @@ describe('addonRepository', () => {
 
     expect(loaded).not.toBeNull();
     expect(loaded).toHaveLength(2);
-    expect(loaded![0]!.title).toBe('Addon A');
-    expect(loaded![0]!.packageName).toBe('addon-a');
-    expect(loaded![0]!.items).toHaveLength(2);
-    expect(loaded![1]!.title).toBe('Addon B');
-    expect(loaded![1]!.items).toHaveLength(0);
+    assert(loaded);
+
+    const addonA = loaded.at(0);
+    assert(addonA);
+    expect(addonA.title).toBe('Addon A');
+    expect(addonA.packageName).toBe('addon-a');
+    expect(addonA.items).toHaveLength(2);
+
+    const addonB = loaded.at(1);
+    assert(addonB);
+    expect(addonB.title).toBe('Addon B');
+    expect(addonB.items).toHaveLength(0);
   });
 
   test('saving twice replaces first set', async () => {
@@ -60,8 +72,15 @@ describe('addonRepository', () => {
 
     const loaded = await loadAddonsFromCache();
     expect(loaded).toHaveLength(2);
-    expect(loaded![0]!.packageName).toBe('second-a');
-    expect(loaded![1]!.packageName).toBe('second-b');
+    assert(loaded);
+
+    const addonA = loaded.at(0);
+    assert(addonA);
+    expect(addonA.packageName).toBe('second-a');
+
+    const addonB = loaded.at(1);
+    assert(addonB);
+    expect(addonB.packageName).toBe('second-b');
   });
 
   test('addon items cascade with parent addon deletion', async () => {
@@ -74,7 +93,11 @@ describe('addonRepository', () => {
 
     // Verify items exist
     let loaded = await loadAddonsFromCache();
-    expect(loaded![0]!.items).toHaveLength(1);
+    assert(loaded);
+
+    const addon = loaded.at(0);
+    assert(addon);
+    expect(addon.items).toHaveLength(1);
 
     // Save empty set (deletes all addons)
     await saveAddons([]);
