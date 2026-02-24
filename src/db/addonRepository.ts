@@ -69,7 +69,7 @@ export const loadAddonsFromCache = wrapWithSpan(
     try {
       const db = getDb();
 
-      const allAddons = db.query.addons.findMany({with: {items: true}});
+      const allAddons = db.query.addons.findMany({with: {items: true}}).sync();
 
       if (allAddons.length === 0) {
         Sentry.logger.info('Addon cache empty');
