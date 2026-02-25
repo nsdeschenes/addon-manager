@@ -1,8 +1,10 @@
 import {cancel, isCancel, password} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
 
-import {readConfig, writeConfig} from './config';
 import {wrapWithSpan} from './sentry';
+
+const SECRETS_SERVICE = 'addon-manager';
+const SECRETS_NAME = 'google-api-key';
 
 export const updateGoogleApiKey = wrapWithSpan(
   {spanName: 'update-google-api-key', op: 'cli.command'},
@@ -20,12 +22,15 @@ export const updateGoogleApiKey = wrapWithSpan(
 
     const trimmed = String(apiKey).trim();
 
-    const existing = await readConfig();
-    await writeConfig({
-      communityPath: existing?.communityPath ?? '',
-      sentryDsn: existing?.sentryDsn,
-      googleApiKey: trimmed || undefined,
-    });
+    if (trimmed) {
+      await Bun.secrets.set({
+        service: SECRETS_SERVICE,
+        name: SECRETS_NAME,
+        value: trimmed,
+      });
+    } else {
+      await Bun.secrets.delete({service: SECRETS_SERVICE, name: SECRETS_NAME});
+    }
 
     Sentry.logger.info(
       Sentry.logger.fmt`Google API key updated: ${trimmed ? 'set' : 'cleared'}`
@@ -33,3 +38,7 @@ export const updateGoogleApiKey = wrapWithSpan(
     return trimmed;
   }
 );
+
+export async function getGoogleApiKey(): Promise<string | null> {
+  return Bun.secrets.get({service: SECRETS_SERVICE, name: SECRETS_NAME});
+}
