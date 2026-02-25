@@ -1,7 +1,8 @@
 import {createGoogleGenerativeAI} from '@ai-sdk/google';
 import {autocomplete, box, cancel, isCancel, spinner} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
-import {generateText} from 'ai';
+import {generateText, Output} from 'ai';
+import {z} from 'zod';
 
 import {getAirportsByIcaoCodes} from './db/airportRepository';
 import {wrapWithSpan} from './sentry';
@@ -48,56 +49,50 @@ export const findFlightRoute = wrapWithSpan(
     Sentry.logger.info(Sentry.logger.fmt`Departure airport selected: ${departure}`);
 
     const s = spinner();
-    s.start('Searching for flight routes...');
+    s.start('Searching for real-world flight data...');
 
     try {
       const googleAI = createGoogleGenerativeAI({apiKey});
       const installedList = icaoCodes.join(', ');
       const departureLabel = formatLabel(departure as string);
 
-      const {text} = await generateText({
+      const flightSchema = z.object({
+        icao: z.string().describe('ICAO code of the destination airport'),
+        airline: z.string().describe('Full airline name e.g. British Airways'),
+        callsign: z.string().describe('ICAO flight callsign e.g. BAW123'),
+        aircraft: z.string().describe('Aircraft type e.g. Boeing 737-800'),
+        reason: z.string().describe('Why this is a popular or interesting route'),
+      });
+
+      // Step 1: use Google Search grounding to get real-world flight data as text
+      const {text: groundedText} = await generateText({
         model: googleAI('gemini-2.5-flash'),
         tools: {googleSearch: googleAI.tools.googleSearch({})},
         prompt: `I am a flight simulator pilot. I have addon scenery installed for these airports: ${installedList}.
 
 My departure airport is ${departureLabel}.
 
-Using real-world flight data, find the top 5 most popular or interesting real-world flights departing from ${departure}. Only include destinations from my installed airport list above.
+Using real-world flight data, find the top 5 most popular or interesting real-world flights departing from ${departure}. Only include destinations from my installed airport list above. If fewer than 5 match, list only the ones that do.
 
-For each flight, respond with exactly this format (one per line):
-ICAO: <destination_icao> | AIRLINE: <airline name> | CALLSIGN: <ICAO callsign e.g. BAW123> | AIRCRAFT: <aircraft type e.g. Boeing 737-800> | REASON: <brief reason why this is a popular or interesting route>
+For each flight include: destination airport ICAO code, airline name, flight callsign, aircraft type, and why it's a popular or interesting route.`,
+      });
 
-Only include airports from the installed list. If fewer than 5 match, list only the ones that do.`,
+      s.message('Structuring results...');
+
+      // Step 2: structure the grounded text into typed output using the schema
+      const {output: results} = await generateText({
+        model: googleAI('gemini-2.5-flash'),
+        output: Output.array({element: flightSchema}),
+        prompt: `Extract the flight route information from the following text and return it as structured data:\n\n${groundedText}`,
       });
 
       s.stop('Routes found!');
 
       Sentry.logger.info('Flight route search completed');
 
-      // Parse structured response lines
-      const lines = text
-        .split('\n')
-        .filter(l => l.includes('ICAO:') && l.includes('AIRLINE:'));
-      const results = lines
-        .map(line => {
-          const icaoMatch = line.match(/ICAO:\s*([A-Z0-9]{3,4})/i);
-          const airlineMatch = line.match(/AIRLINE:\s*([^|]+)/i);
-          const callsignMatch = line.match(/CALLSIGN:\s*([^|]+)/i);
-          const aircraftMatch = line.match(/AIRCRAFT:\s*([^|]+)/i);
-          const reasonMatch = line.match(/REASON:\s*(.+)/i);
-          return {
-            icao: icaoMatch?.[1]?.toUpperCase() ?? '',
-            airline: airlineMatch?.[1]?.trim() ?? '',
-            callsign: callsignMatch?.[1]?.trim() ?? '',
-            aircraft: aircraftMatch?.[1]?.trim() ?? '',
-            reason: reasonMatch?.[1]?.trim() ?? '',
-          };
-        })
-        .filter(r => r.icao && r.airline);
-
-      if (results.length === 0) {
+      if (!results || results.length === 0) {
         box(
-          `No matching installed airports found as destinations from ${departure}.\n\nAI response:\n${text}`,
+          `No matching installed airports found as destinations from ${departure}.`,
           `Flight Routes from ${departure}`
         );
         return;
@@ -105,7 +100,7 @@ Only include airports from the installed list. If fewer than 5 match, list only 
 
       const resultLines = results.map(({icao, airline, callsign, aircraft, reason}) => {
         const label = formatLabel(icao);
-        const lines = [`${label}`, `  Airline:   ${airline}`];
+        const lines = [label, `  Airline:   ${airline}`];
         if (callsign) lines.push(`  Callsign:  ${callsign}`);
         if (aircraft) lines.push(`  Aircraft:  ${aircraft}`);
         if (reason) lines.push(`  Route:     ${reason}`);
