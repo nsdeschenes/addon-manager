@@ -62,10 +62,10 @@ export const findFlightRoute = wrapWithSpan(
 
 My departure airport is ${departureLabel}.
 
-Using real-world flight data, find the top 5 most popular or interesting flight destinations from ${departure}. Only include destinations from my installed airport list above.
+Using real-world flight data, find the top 5 most popular or interesting real-world flights departing from ${departure}. Only include destinations from my installed airport list above.
 
-For each destination, respond with exactly this format (one per line):
-ICAO: <icao_code> | REASON: <brief reason why this is a popular or interesting route>
+For each flight, respond with exactly this format (one per line):
+ICAO: <destination_icao> | AIRLINE: <airline name> | CALLSIGN: <ICAO callsign e.g. BAW123> | AIRCRAFT: <aircraft type e.g. Boeing 737-800> | REASON: <brief reason why this is a popular or interesting route>
 
 Only include airports from the installed list. If fewer than 5 match, list only the ones that do.`,
       });
@@ -74,20 +74,26 @@ Only include airports from the installed list. If fewer than 5 match, list only 
 
       Sentry.logger.info('Flight route search completed');
 
-      // Parse ICAO: xxx | REASON: yyy lines
+      // Parse structured response lines
       const lines = text
         .split('\n')
-        .filter(l => l.includes('ICAO:') && l.includes('REASON:'));
+        .filter(l => l.includes('ICAO:') && l.includes('AIRLINE:'));
       const results = lines
         .map(line => {
           const icaoMatch = line.match(/ICAO:\s*([A-Z0-9]{3,4})/i);
+          const airlineMatch = line.match(/AIRLINE:\s*([^|]+)/i);
+          const callsignMatch = line.match(/CALLSIGN:\s*([^|]+)/i);
+          const aircraftMatch = line.match(/AIRCRAFT:\s*([^|]+)/i);
           const reasonMatch = line.match(/REASON:\s*(.+)/i);
           return {
             icao: icaoMatch?.[1]?.toUpperCase() ?? '',
+            airline: airlineMatch?.[1]?.trim() ?? '',
+            callsign: callsignMatch?.[1]?.trim() ?? '',
+            aircraft: aircraftMatch?.[1]?.trim() ?? '',
             reason: reasonMatch?.[1]?.trim() ?? '',
           };
         })
-        .filter(r => r.icao && r.reason);
+        .filter(r => r.icao && r.airline);
 
       if (results.length === 0) {
         box(
@@ -97,9 +103,13 @@ Only include airports from the installed list. If fewer than 5 match, list only 
         return;
       }
 
-      const resultLines = results.map(({icao, reason}) => {
+      const resultLines = results.map(({icao, airline, callsign, aircraft, reason}) => {
         const label = formatLabel(icao);
-        return `${label}\n  ${reason}`;
+        const lines = [`${label}`, `  Airline:   ${airline}`];
+        if (callsign) lines.push(`  Callsign:  ${callsign}`);
+        if (aircraft) lines.push(`  Aircraft:  ${aircraft}`);
+        if (reason) lines.push(`  Route:     ${reason}`);
+        return lines.join('\n');
       });
 
       box(resultLines.join('\n\n'), `Flight Routes from ${departureLabel}`);
