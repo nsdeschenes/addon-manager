@@ -12,6 +12,7 @@ import {withTelemetry} from './sentry';
 import {settings} from './settings';
 import type {Addon} from './types';
 import {updateCommunityPath} from './updateCommunityPath';
+import {getGoogleApiKey} from './updateGoogleApiKey';
 import {viewAddons} from './viewAddons';
 import {viewAirports} from './viewAirports';
 
@@ -30,7 +31,7 @@ async function main() {
     communityPath = config.communityPath;
   }
   sentryDsn = config?.sentryDsn;
-  googleApiKey = config?.googleApiKey;
+  googleApiKey = (await getGoogleApiKey()) ?? undefined;
 
   Sentry.logger.info(
     Sentry.logger
