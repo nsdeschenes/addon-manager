@@ -5,6 +5,7 @@ import {loadAddonsFromCache} from './db/addonRepository';
 import {hasAirportData} from './db/airportRepository';
 import {closeDb, migrateFromJson} from './db/index';
 import {readConfig} from './config';
+import {findFlightRoute} from './findFlightRoute';
 import {loadAddons} from './loadAddons';
 import {loadAirports} from './loadAirports';
 import {withTelemetry} from './sentry';
@@ -16,6 +17,7 @@ import {viewAirports} from './viewAirports';
 
 let communityPath: string | symbol;
 let sentryDsn: string | undefined;
+let googleApiKey: string | undefined;
 let addons: Addon[] = [];
 let airportsLoaded = false;
 
@@ -28,6 +30,7 @@ async function main() {
     communityPath = config.communityPath;
   }
   sentryDsn = config?.sentryDsn;
+  googleApiKey = config?.googleApiKey;
 
   Sentry.logger.info(
     Sentry.logger
@@ -86,6 +89,12 @@ async function main() {
           hint: airportsLoaded ? 'Update airport database' : 'Download airport database',
         },
         {
+          value: 'find-flight-route',
+          label: 'Find Flight Route',
+          hint: 'AI-powered route suggestions',
+          disabled: addons.length === 0 || !airportsLoaded || !googleApiKey,
+        },
+        {
           value: 'settings',
           label: 'Settings',
           hint: 'Update application configuration',
@@ -120,8 +129,15 @@ async function main() {
           airportsLoaded = true;
         }
         break;
+      case 'find-flight-route':
+        await findFlightRoute(addons, googleApiKey!);
+        break;
       case 'settings':
-        ({communityPath, sentryDsn} = await settings(communityPath, sentryDsn));
+        ({communityPath, sentryDsn, googleApiKey} = await settings(
+          communityPath,
+          sentryDsn,
+          googleApiKey
+        ));
         break;
       case 'exit':
         running = false;
