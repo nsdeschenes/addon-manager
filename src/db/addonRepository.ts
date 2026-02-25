@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/bun';
-import {eq} from 'drizzle-orm';
 
 import {wrapWithSpan} from '../sentry';
 import type {Addon} from '../types';
@@ -66,38 +65,30 @@ export const saveAddons = wrapWithSpan(
 
 export const loadAddonsFromCache = wrapWithSpan(
   {spanName: 'load-addons-from-cache', op: 'db.query'},
-  function (): Addon[] | null {
+  async function (): Promise<Addon[] | null> {
     try {
       const db = getDb();
 
-      const allAddons = db.select().from(addons).all();
+      const allAddons = await db.query.addons.findMany({with: {items: true}});
 
       if (allAddons.length === 0) {
         Sentry.logger.info('Addon cache empty');
         return null;
       }
 
-      const result: Addon[] = allAddons.map(addon => {
-        const items = db
-          .select()
-          .from(addonItems)
-          .where(eq(addonItems.addonId, addon.id))
-          .all();
-
-        return {
-          title: addon.title,
-          creator: addon.creator,
-          size: addon.size,
-          packageName: addon.packageName,
-          packageVersion: addon.packageVersion,
-          minimumGameVersion: addon.minimumGameVersion,
-          items: items.map(item => ({
-            type: item.type,
-            content: item.content,
-            revision: item.revision,
-          })),
-        };
-      });
+      const result: Addon[] = allAddons.map(addon => ({
+        title: addon.title,
+        creator: addon.creator,
+        size: addon.size,
+        packageName: addon.packageName,
+        packageVersion: addon.packageVersion,
+        minimumGameVersion: addon.minimumGameVersion,
+        items: addon.items.map(item => ({
+          type: item.type,
+          content: item.content,
+          revision: item.revision,
+        })),
+      }));
 
       Sentry.logger.info(Sentry.logger.fmt`Addon cache loaded, ${result.length} addons`);
       Sentry.metrics.gauge('cached_addons', result.length);

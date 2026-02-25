@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/bun';
-import {inArray, sql} from 'drizzle-orm';
 
 import {wrapWithSpan} from '../sentry';
 import type {Airport} from '../types';
@@ -53,27 +52,22 @@ export const saveAirports = wrapWithSpan(
 
 export const hasAirportData = wrapWithSpan(
   {spanName: 'has-airport-data', op: 'db.query'},
-  function (): boolean {
+  async function (): Promise<boolean> {
     const db = getDb();
-    const result = db
-      .select({count: sql<number>`count(*)`})
-      .from(airports)
-      .get();
-    return (result?.count ?? 0) > 0;
+    const result = await db.query.airports.findFirst();
+    return result !== undefined;
   }
 );
 
 export const getAirportsByIcaoCodes = wrapWithSpan(
   {spanName: 'get-airports-by-icao', op: 'db.query'},
-  function (codes: string[]): Airport[] {
+  async function (codes: string[]): Promise<Airport[]> {
     if (codes.length === 0) return [];
 
     const db = getDb();
-    const results = db
-      .select()
-      .from(airports)
-      .where(inArray(airports.icaoCode, codes))
-      .all();
+    const results = await db.query.airports.findMany({
+      where: {icaoCode: {in: codes}},
+    });
 
     Sentry.logger.info(
       Sentry.logger.fmt`Airport lookup: ${results.length}/${codes.length} matched`
