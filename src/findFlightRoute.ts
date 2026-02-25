@@ -57,7 +57,9 @@ export const findFlightRoute = wrapWithSpan(
       airline: z.string().describe('Full airline name e.g. British Airways'),
       callsign: z.string().describe('ICAO flight callsign e.g. BAW123'),
       aircraft: z.string().describe('Aircraft type e.g. Boeing 737-800'),
-      reason: z.string().describe('Why this is a popular or interesting route'),
+      reason: z
+        .string()
+        .describe('Why this is a popular or interesting route, maximum 8 words'),
     });
 
     let groundedText = '';
