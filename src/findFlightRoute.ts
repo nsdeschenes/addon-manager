@@ -59,7 +59,7 @@ export const findFlightRoute = wrapWithSpan(
       aircraft: z.string().describe('Aircraft type e.g. Boeing 737-800'),
       reason: z
         .string()
-        .describe('Why this is a popular or interesting route, maximum 8 words'),
+        .describe('Why this is a popular or interesting route, maximum 20 words'),
     });
 
     let groundedText = '';
