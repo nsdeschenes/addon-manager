@@ -60,6 +60,7 @@ export const findFlightRoute = wrapWithSpan(
       reason: z.string().describe('Why this is a popular or interesting route'),
     });
 
+    let groundedText = '';
     let results: z.infer<typeof flightSchema>[] | undefined;
 
     await tasks([
@@ -68,8 +69,7 @@ export const findFlightRoute = wrapWithSpan(
         task: wrapWithSpan(
           {spanName: 'find-flight-route-search', op: 'cli.task'},
           async () => {
-            // Step 1: use Google Search grounding to get real-world flight data as text
-            const {text: groundedText} = await generateText({
+            const {text} = await generateText({
               model: googleAI('gemini-2.5-flash'),
               tools: {googleSearch: googleAI.tools.googleSearch({})},
               prompt: `I am a flight simulator pilot. I have addon scenery installed for these airports: ${installedList}.
@@ -81,7 +81,16 @@ Using real-world flight data, find the top 5 most popular or interesting real-wo
 For each flight include: destination airport ICAO code, airline name, flight callsign, aircraft type, and why it's a popular or interesting route.`,
             });
 
-            // Step 2: structure the grounded text into typed output using the schema
+            groundedText = text;
+            return 'Search complete';
+          }
+        ),
+      },
+      {
+        title: 'Structuring results',
+        task: wrapWithSpan(
+          {spanName: 'find-flight-route-structure', op: 'cli.task'},
+          async () => {
             const {output} = await generateText({
               model: googleAI('gemini-2.5-flash'),
               output: Output.array({element: flightSchema}),
@@ -90,7 +99,7 @@ For each flight include: destination airport ICAO code, airline name, flight cal
 
             results = output ?? [];
             Sentry.logger.info('Flight route search completed');
-            return 'Routes found';
+            return 'Structuring complete';
           }
         ),
       },
