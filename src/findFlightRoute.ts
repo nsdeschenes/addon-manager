@@ -65,55 +65,63 @@ export const findFlightRoute = wrapWithSpan(
     let groundedText = '';
     let results: z.infer<typeof flightSchema>[] | undefined;
 
-    await tasks([
-      {
-        title: 'Searching for real-world flight data',
-        task: wrapWithSpan(
-          {spanName: 'find-flight-route-search', op: 'cli.task'},
-          async () => {
-            const {text} = await generateText({
-              model: googleAI('gemini-2.5-flash'),
-              tools: {googleSearch: googleAI.tools.googleSearch({})},
-              experimental_telemetry: {
-                isEnabled: true,
-                functionId: 'find-flight-route-search',
-              },
-              prompt: `I am a flight simulator pilot. I have addon scenery installed for these airports: ${installedList}.
+    try {
+      await tasks([
+        {
+          title: 'Searching for real-world flight data',
+          task: wrapWithSpan(
+            {spanName: 'find-flight-route-search', op: 'cli.task'},
+            async () => {
+              const {text} = await generateText({
+                model: googleAI('gemini-2.5-flash'),
+                tools: {googleSearch: googleAI.tools.googleSearch({})},
+                experimental_telemetry: {
+                  isEnabled: true,
+                  functionId: 'find-flight-route-search',
+                },
+                prompt: `I am a flight simulator pilot. I have addon scenery installed for these airports: ${installedList}.
 
 My departure airport is ${departureLabel}.
 
 Using real-world flight data, find the top 5 most popular or interesting real-world flights departing from ${departure}. Only include destinations from my installed airport list above. If fewer than 5 match, list only the ones that do.
 
 For each flight include: destination airport ICAO code, airline name, flight callsign, aircraft type, and why it's a popular or interesting route.`,
-            });
+              });
 
-            groundedText = text;
-            return 'Search complete';
-          }
-        ),
-      },
-      {
-        title: 'Structuring results',
-        task: wrapWithSpan(
-          {spanName: 'find-flight-route-structure', op: 'cli.task'},
-          async () => {
-            const {output} = await generateText({
-              model: googleAI('gemini-2.5-flash'),
-              output: Output.array({element: flightSchema}),
-              experimental_telemetry: {
-                isEnabled: true,
-                functionId: 'find-flight-route-structure',
-              },
-              prompt: `Extract the flight route information from the following text and return it as structured data:\n\n${groundedText}`,
-            });
+              groundedText = text;
+              return 'Search complete';
+            }
+          ),
+        },
+        {
+          title: 'Structuring results',
+          task: wrapWithSpan(
+            {spanName: 'find-flight-route-structure', op: 'cli.task'},
+            async () => {
+              const {output} = await generateText({
+                model: googleAI('gemini-2.5-flash'),
+                output: Output.array({element: flightSchema}),
+                experimental_telemetry: {
+                  isEnabled: true,
+                  functionId: 'find-flight-route-structure',
+                },
+                prompt: `Extract the flight route information from the following text and return it as structured data:\n\n${groundedText}`,
+              });
 
-            results = output ?? [];
-            Sentry.logger.info('Flight route search completed');
-            return 'Structuring complete';
-          }
-        ),
-      },
-    ]);
+              results = output ?? [];
+              Sentry.logger.info('Flight route search completed');
+              return 'Structuring complete';
+            }
+          ),
+        },
+      ]);
+    } catch (error) {
+      Sentry.logger.error('Flight route search failed');
+      cancel(
+        `Failed to fetch flight routes: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return;
+    }
 
     if (!results || results.length === 0) {
       box(
