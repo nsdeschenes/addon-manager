@@ -134,9 +134,16 @@ jobs:
         run: bun run lint:ts
 
   build:
-    name: Build
+    name: Build (${{ matrix.target }})
     needs: install
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - build-linux-x64
+          - build-darwin-x64
+          - build-darwin-arm64
+          - build-windows-x64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -160,7 +167,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build
-        run: make build
+        run: make ${{ matrix.target }}
 
   test:
     name: Test
