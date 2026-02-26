@@ -1,5 +1,5 @@
-import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 import * as Sentry from '@sentry/bun';
+import {cancel, intro, isCancel, outro, select} from '@clack/prompts';
 
 import {loadAddonsFromCache} from './db/addonRepository';
 import {hasAirportData} from './db/airportRepository';

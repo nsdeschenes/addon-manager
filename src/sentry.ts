@@ -92,14 +92,15 @@ function initSentry(dsn: string | undefined) {
     environment,
     release: version,
     sendDefaultPii: false,
-    defaultIntegrations: false,
     tracesSampleRate: environment === 'development' ? 1 : 0.1,
     sampleRate: 1,
     tracePropagationTargets: [],
 
     enableLogs: true,
     enableMetrics: true,
+
     integrations: [
+      Sentry.fsIntegration(),
       Sentry.vercelAIIntegration({
         recordInputs: true,
         recordOutputs: true,
