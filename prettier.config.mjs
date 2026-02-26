@@ -7,7 +7,6 @@
 const config = {
   plugins: ['@prettier/plugin-oxc', '@ianvs/prettier-plugin-sort-imports'],
   importOrder: [
-    String.raw`^@sentry$`,
     // Node.js builtins.
     '<BUILTIN_MODULES>',
     '',
