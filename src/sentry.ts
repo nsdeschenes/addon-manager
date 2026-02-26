@@ -99,6 +99,12 @@ function initSentry(dsn: string | undefined) {
 
     enableLogs: true,
     enableMetrics: true,
+    integrations: [
+      Sentry.vercelAIIntegration({
+        recordInputs: true,
+        recordOutputs: true,
+      }),
+    ],
 
     beforeSendTransaction: tx => {
       tx.server_name = undefined;
