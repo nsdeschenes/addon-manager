@@ -74,6 +74,10 @@ export const findFlightRoute = wrapWithSpan(
             const {text} = await generateText({
               model: googleAI('gemini-2.5-flash'),
               tools: {googleSearch: googleAI.tools.googleSearch({})},
+              experimental_telemetry: {
+                isEnabled: true,
+                functionId: 'find-flight-route-search',
+              },
               prompt: `I am a flight simulator pilot. I have addon scenery installed for these airports: ${installedList}.
 
 My departure airport is ${departureLabel}.
@@ -96,6 +100,10 @@ For each flight include: destination airport ICAO code, airline name, flight cal
             const {output} = await generateText({
               model: googleAI('gemini-2.5-flash'),
               output: Output.array({element: flightSchema}),
+              experimental_telemetry: {
+                isEnabled: true,
+                functionId: 'find-flight-route-structure',
+              },
               prompt: `Extract the flight route information from the following text and return it as structured data:\n\n${groundedText}`,
             });
 
