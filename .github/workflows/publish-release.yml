@@ -52,7 +52,7 @@ jobs:
 
             - name: Build all platforms
               if: steps.check_labels.outputs.has_release == 'true'
-              run: bun run build:all
+              run: make build
 
             - name: Upload build artifacts
               if: steps.check_labels.outputs.has_release == 'true'
