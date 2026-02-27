@@ -11,6 +11,7 @@ import {toYaml} from './utils/jsonToYaml';
 const ConfigSchema = z.object({
   communityPath: z.string(),
   sentryDsn: z.string().optional(),
+  tracesSampleRate: z.number().min(0).max(1).optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

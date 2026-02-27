@@ -5,11 +5,13 @@ import {wrapWithSpan} from './sentry';
 import {updateCommunityPath} from './updateCommunityPath';
 import {updateGoogleApiKey} from './updateGoogleApiKey';
 import {updateSentryDsn} from './updateSentryDsn';
+import {updateTracesSampleRate} from './updateTracesSampleRate';
 
 interface SettingsState {
   communityPath: string | symbol;
   sentryDsn: string | undefined;
   googleApiKey: string | undefined;
+  tracesSampleRate: number | undefined;
 }
 
 export const settings = wrapWithSpan(
@@ -17,7 +19,8 @@ export const settings = wrapWithSpan(
   async function (
     communityPath: string | symbol,
     sentryDsn: string | undefined,
-    googleApiKey: string | undefined
+    googleApiKey: string | undefined,
+    tracesSampleRate: number | undefined
   ): Promise<SettingsState> {
     let inSettings = true;
 
@@ -39,6 +42,11 @@ export const settings = wrapWithSpan(
             value: 'update-google-api-key',
             label: 'Set Google AI Key',
             hint: 'API key for flight route search',
+          },
+          {
+            value: 'update-traces-sample-rate',
+            label: 'Set Traces Sample Rate',
+            hint: 'Configure Sentry traces sample rate (0–1)',
           },
           {
             value: 'back',
@@ -67,12 +75,15 @@ export const settings = wrapWithSpan(
         case 'update-google-api-key':
           googleApiKey = (await updateGoogleApiKey(googleApiKey)) || undefined;
           break;
+        case 'update-traces-sample-rate':
+          tracesSampleRate = await updateTracesSampleRate(tracesSampleRate);
+          break;
         case 'back':
           inSettings = false;
           break;
       }
     }
 
-    return {communityPath, sentryDsn, googleApiKey};
+    return {communityPath, sentryDsn, googleApiKey, tracesSampleRate};
   }
 );

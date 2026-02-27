@@ -19,6 +19,7 @@ import {viewAirports} from './viewAirports';
 let communityPath: string | symbol;
 let sentryDsn: string | undefined;
 let googleApiKey: string | undefined;
+let tracesSampleRate: number | undefined;
 let addons: Addon[] = [];
 let airportsLoaded = false;
 
@@ -31,6 +32,7 @@ async function main() {
     communityPath = config.communityPath;
   }
   sentryDsn = config?.sentryDsn;
+  tracesSampleRate = config?.tracesSampleRate;
   googleApiKey = (await getGoogleApiKey()) ?? undefined;
 
   Sentry.logger.info(
@@ -134,10 +136,11 @@ async function main() {
         await findFlightRoute(addons, googleApiKey!);
         break;
       case 'settings':
-        ({communityPath, sentryDsn, googleApiKey} = await settings(
+        ({communityPath, sentryDsn, googleApiKey, tracesSampleRate} = await settings(
           communityPath,
           sentryDsn,
-          googleApiKey
+          googleApiKey,
+          tracesSampleRate
         ));
         break;
       case 'exit':
@@ -162,7 +165,7 @@ async function main() {
 
 // Read config early to get DSN for telemetry init
 readConfig().then(config => {
-  withTelemetry(config?.sentryDsn, async () => {
+  withTelemetry(config?.sentryDsn, config?.tracesSampleRate, async () => {
     await main();
   }).catch(console.error);
 });
