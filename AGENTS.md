@@ -29,6 +29,26 @@ addon-manager/
 - **File System**: Node:fs/promises (https://nodejs.org/api/fs.html)
 - **File System**: Bun:fs (https://bun.sh/docs/runtime/file-io)
 
+## Sentry Instrumentation
+
+When adding new code, always instrument with Sentry:
+
+**Spans** — wrap functions using `wrapWithSpan()` from `src/sentry.ts`:
+- `op`: use something like: `'cli.command'`, `'cli.task'`, `'db.query'`, `'db.transaction'`, `'utils.function'`, etc.
+- Add relevant attributes (counts, paths, identifiers)
+
+**Logs** — use `Sentry.logger` (not `console`):
+- `Sentry.logger.info(Sentry.logger.fmt\`...\`)`
+- `Sentry.logger.warn(...)` / `Sentry.logger.error(...)`
+
+**Metrics** — emit at meaningful boundaries:
+- `Sentry.metrics.count(name, value)` — for events/totals
+- `Sentry.metrics.gauge(name, value)` — for current state
+- `Sentry.metrics.distribution(name, value)` — for timing/sizes
+
+**Exceptions** — capture in error handlers:
+- `Sentry.captureException(error)`
+
 ## Commands
 
 ### Dev setup and running
