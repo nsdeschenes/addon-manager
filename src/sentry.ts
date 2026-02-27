@@ -12,9 +12,10 @@ declare const __APP_ENV__: string;
 
 export async function withTelemetry<T>(
   sentryDsn: string | undefined,
+  tracesSampleRate: number | undefined,
   callback: () => T | Promise<T>
 ): Promise<T> {
-  const client = initSentry(sentryDsn);
+  const client = initSentry(sentryDsn, tracesSampleRate);
   if (!client?.getOptions().enabled) {
     Sentry.logger.info('Sentry telemetry disabled');
     return callback();
@@ -78,7 +79,7 @@ export function wrapWithSpan<T extends (...args: any[]) => any>(
   };
 }
 
-function initSentry(dsn: string | undefined) {
+function initSentry(dsn: string | undefined, configTracesSampleRate?: number) {
   const version =
     typeof __APP_VERSION__ !== 'undefined'
       ? __APP_VERSION__
@@ -86,13 +87,26 @@ function initSentry(dsn: string | undefined) {
   const environment = typeof __APP_ENV__ !== 'undefined' ? __APP_ENV__ : 'development';
   const enabled = !!dsn;
 
+  const defaultTracesSampleRate = environment === 'development' ? 1 : 0.1;
+  const resolvedTracesSampleRate = configTracesSampleRate ?? defaultTracesSampleRate;
+
+  if (configTracesSampleRate !== undefined) {
+    Sentry.logger.info(
+      Sentry.logger.fmt`tracesSampleRate: ${resolvedTracesSampleRate} (config override)`
+    );
+  } else {
+    Sentry.logger.info(
+      Sentry.logger.fmt`tracesSampleRate: ${resolvedTracesSampleRate} (default)`
+    );
+  }
+
   const client = Sentry.init({
     dsn: dsn ?? '',
     enabled,
     environment,
     release: version,
     sendDefaultPii: false,
-    tracesSampleRate: environment === 'development' ? 1 : 0.1,
+    tracesSampleRate: resolvedTracesSampleRate,
     sampleRate: 1,
     tracePropagationTargets: [],
 
