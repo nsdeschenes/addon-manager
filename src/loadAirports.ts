@@ -8,7 +8,7 @@ import type {Airport} from './types';
 const AIRPORTS_CSV_URL =
   'https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv';
 
-function parseAirportsCsv(csv: string): Airport[] {
+export function parseAirportsCsv(csv: string): Airport[] {
   const lines = csv.split('\n');
   const header = lines[0];
   if (!header) return [];
