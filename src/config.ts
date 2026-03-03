@@ -19,9 +19,12 @@ export type Config = z.infer<typeof ConfigSchema>;
 const CONFIG_DIR = join(homedir(), '.addon-manager');
 const CONFIG_FILE = join(CONFIG_DIR, 'config.yaml');
 
-export async function readConfig(initial?: boolean): Promise<Config | null> {
+export async function readConfig(
+  initial?: boolean,
+  {configFile = CONFIG_FILE}: {configFile?: string} = {}
+): Promise<Config | null> {
   try {
-    const content = await fs.readFile(CONFIG_FILE, 'utf-8');
+    const content = await fs.readFile(configFile, 'utf-8');
     const parsed = Bun.YAML.parse(content);
     const validated = ConfigSchema.safeParse(parsed);
 
@@ -54,13 +57,19 @@ export async function readConfig(initial?: boolean): Promise<Config | null> {
   }
 }
 
-export async function writeConfig(config: Config): Promise<void> {
+export async function writeConfig(
+  config: Config,
+  {
+    configDir = CONFIG_DIR,
+    configFile = CONFIG_FILE,
+  }: {configDir?: string; configFile?: string} = {}
+): Promise<void> {
   try {
     // Ensure directory exists
-    await fs.mkdir(CONFIG_DIR, {recursive: true});
+    await fs.mkdir(configDir, {recursive: true});
 
     // Write config file
-    await fs.writeFile(CONFIG_FILE, toYaml(config), 'utf-8');
+    await fs.writeFile(configFile, toYaml(config), 'utf-8');
     Sentry.logger.info('Config written successfully');
   } catch (error) {
     Sentry.logger.error('Config write failure');
