@@ -9,6 +9,7 @@ Addon manager is a small CLI tool built to help view and manage your microsoft f
 ```
 addon-manager/
 └── src/ # Main application code
+    ├── db/ # Database related code
     └── utils/ # Small reusable utility functions
 
 ```

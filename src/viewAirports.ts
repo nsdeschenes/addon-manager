@@ -6,12 +6,28 @@ import {renderAddon} from './utils/renderAddon';
 import {wrapWithSpan} from './sentry';
 import type {Addon, Airport} from './types';
 
+export function extractIcaoCodes(addons: Addon[]): string[] {
+  return addons.flatMap(addon =>
+    addon.items.filter(item => /airport/i.test(item.type)).map(item => item.content)
+  );
+}
+
+export function formatAirportLabel(
+  icao: string,
+  airportMap: Map<string, Airport>
+): string {
+  const info = airportMap.get(icao);
+  if (!info) return icao;
+  const parts = [icao, '—', info.name];
+  if (info.municipality) parts.push(`(${info.municipality})`);
+  if (info.isoCountry) parts.push(`[${info.isoCountry}]`);
+  return parts.join(' ');
+}
+
 export const viewAirports = wrapWithSpan(
   {spanName: 'view-airports', op: 'cli.command'},
   async function (addons: Addon[]) {
-    const icaoCodes = addons.flatMap(addon =>
-      addon.items.filter(item => /airport/i.test(item.type)).map(item => item.content)
-    );
+    const icaoCodes = extractIcaoCodes(addons);
 
     Sentry.logger.info(Sentry.logger.fmt`Airports found: ${icaoCodes.length}`);
     Sentry.metrics.count('airports_found', icaoCodes.length);
@@ -31,14 +47,7 @@ export const viewAirports = wrapWithSpan(
         .fmt`Airport enrichment: ${airportMap.size}/${icaoCodes.length} matched`
     );
 
-    const formatLabel = (icao: string): string => {
-      const info = airportMap.get(icao);
-      if (!info) return icao;
-      const parts = [icao, '—', info.name];
-      if (info.municipality) parts.push(`(${info.municipality})`);
-      if (info.isoCountry) parts.push(`[${info.isoCountry}]`);
-      return parts.join(' ');
-    };
+    const formatLabel = (icao: string) => formatAirportLabel(icao, airportMap);
 
     const airport = await autocomplete({
       message: 'Select airports to view',
