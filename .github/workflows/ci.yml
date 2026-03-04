@@ -199,7 +199,7 @@ jobs:
         run: bun test -- --coverage --coverage-reporter=lcov
 
       - name: Codecov Action
-        uses: getsentry/codecov-action@v1
+        uses: getsentry/codecov-action@latest
         with:
             token: ${{ secrets.GITHUB_TOKEN }}
             directory: ./coverage
