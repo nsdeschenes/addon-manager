@@ -204,3 +204,4 @@ jobs:
             token: ${{ secrets.GITHUB_TOKEN }}
             directory: ./coverage
             coverage-format: lcov
+            post-pr-comment: true
