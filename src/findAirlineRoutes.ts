@@ -73,7 +73,11 @@ export const findAirlineRoutes = wrapWithSpan(
     const flightSchema = z.object({
       icao: z.string().describe('ICAO code of the destination airport'),
       airline: z.string().describe('Full airline name e.g. British Airways'),
-      callsign: z.string().describe('ICAO flight callsign e.g. BAW123'),
+      callsign: z
+        .string()
+        .describe(
+          'Full ATC callsign: ICAO airline code + flight number, optional Heavy/Super, dash, telephony name + flight number + Heavy/Super. e.g. "BAW396 Heavy - SPEEDBIRD396 Heavy" or "DLH123 - LUFTHANSA123"'
+        ),
       aircraft: z.string().describe('Aircraft type e.g. Boeing 737-800'),
       reason: z
         .string()
@@ -99,7 +103,7 @@ export const findAirlineRoutes = wrapWithSpan(
                 },
                 prompt: `I am a flight simulator pilot. Using real-world flight data, find all airline routes between ${departureLabel} and ${arrivalLabel}.
 
-List every real-world scheduled airline route operating between ${departure} and ${arrival} (in both directions). For each route include: destination airport ICAO code (${arrival}), airline name, flight callsign, aircraft type, and why it's a notable route.`,
+List every real-world scheduled airline route operating between ${departure} and ${arrival} (in both directions). For each route include: destination airport ICAO code (${arrival}), airline name, full ATC callsign (ICAO airline 3-letter code + flight number, add "Heavy" or "Super" if the aircraft requires it, then a dash, then the ICAO telephony name + flight number + Heavy/Super — e.g. "BAW396 Heavy - SPEEDBIRD396 Heavy" or "DLH123 - LUFTHANSA123"), aircraft type, and why it's a notable route.`,
               });
 
               groundedText = text;
