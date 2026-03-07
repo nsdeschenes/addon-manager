@@ -5,6 +5,7 @@ import {loadAddonsFromCache} from './db/addonRepository';
 import {hasAirportData} from './db/airportRepository';
 import {closeDb, migrateFromJson} from './db/index';
 import {readConfig} from './config';
+import {findAirlineRoutes} from './findAirlineRoutes';
 import {findFlightRoute} from './findFlightRoute';
 import {loadAddons} from './loadAddons';
 import {loadAirports} from './loadAirports';
@@ -98,6 +99,12 @@ async function main() {
           disabled: addons.length === 0 || !airportsLoaded || !googleApiKey,
         },
         {
+          value: 'find-airline-routes',
+          label: 'Find Airline Routes',
+          hint: 'AI-powered airline route lookup',
+          disabled: addons.length === 0 || !airportsLoaded || !googleApiKey,
+        },
+        {
           value: 'settings',
           label: 'Settings',
           hint: 'Update application configuration',
@@ -134,6 +141,9 @@ async function main() {
         break;
       case 'find-flight-route':
         await findFlightRoute(addons, googleApiKey!);
+        break;
+      case 'find-airline-routes':
+        await findAirlineRoutes(addons, googleApiKey!);
         break;
       case 'settings':
         ({communityPath, sentryDsn, googleApiKey, tracesSampleRate} = await settings(
