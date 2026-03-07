@@ -8,8 +8,8 @@ import {getAirportsByIcaoCodes} from './db/airportRepository';
 import {wrapWithSpan} from './sentry';
 import type {Addon, Airport} from './types';
 
-export const findFlightRoute = wrapWithSpan(
-  {spanName: 'find-flight-route', op: 'cli.command'},
+export const findAirlineRoutes = wrapWithSpan(
+  {spanName: 'find-airline-routes', op: 'cli.command'},
   async function (addons: Addon[], apiKey: string) {
     const icaoCodes = addons.flatMap(addon =>
       addon.items.filter(item => /airport/i.test(item.type)).map(item => item.content)
@@ -42,15 +42,33 @@ export const findFlightRoute = wrapWithSpan(
     });
 
     if (isCancel(departure)) {
-      cancel('No airport selected');
+      cancel('No departure airport selected');
       return;
     }
 
     Sentry.logger.info(Sentry.logger.fmt`Departure airport selected: ${departure}`);
 
+    const arrival = await autocomplete({
+      message: 'Select arrival airport',
+      options: icaoCodes
+        .filter(icao => icao !== departure)
+        .map(icao => ({
+          value: icao,
+          label: formatLabel(icao),
+        })),
+      maxItems: 10,
+    });
+
+    if (isCancel(arrival)) {
+      cancel('No arrival airport selected');
+      return;
+    }
+
+    Sentry.logger.info(Sentry.logger.fmt`Arrival airport selected: ${arrival}`);
+
     const googleAI = createGoogleGenerativeAI({apiKey});
-    const installedList = icaoCodes.join(', ');
     const departureLabel = formatLabel(departure as string);
+    const arrivalLabel = formatLabel(arrival as string);
 
     const flightSchema = z.object({
       icao: z.string().describe('ICAO code of the destination airport'),
@@ -72,24 +90,20 @@ export const findFlightRoute = wrapWithSpan(
     try {
       await tasks([
         {
-          title: 'Searching for real-world flight data',
+          title: 'Searching for real-world airline route data',
           task: wrapWithSpan(
-            {spanName: 'find-flight-route-search', op: 'cli.task'},
+            {spanName: 'find-airline-routes-search', op: 'cli.task'},
             async () => {
               const {text} = await generateText({
                 model: googleAI('gemini-2.5-flash'),
                 tools: {googleSearch: googleAI.tools.googleSearch({})},
                 experimental_telemetry: {
                   isEnabled: true,
-                  functionId: 'find-flight-route-search',
+                  functionId: 'find-airline-routes-search',
                 },
-                prompt: `I am a flight simulator pilot. I have addon scenery installed for these airports: ${installedList}.
+                prompt: `I am a flight simulator pilot. Using real-world flight data, find all airline routes departing from ${departureLabel} and arriving at ${arrivalLabel}.
 
-My departure airport is ${departureLabel}.
-
-Using real-world flight data, find the top 5 most popular or interesting real-world flights departing from ${departure}. Only include destinations from my installed airport list above. If fewer than 5 match, list only the ones that do.
-
-For each flight include: destination airport ICAO code, airline name, full ATC callsign (ICAO airline 3-letter code + flight number, add "Heavy" or "Super" if the aircraft requires it, then a dash, then the ICAO telephony name + flight number + Heavy/Super — e.g. "BAW396 Heavy - SPEEDBIRD 396 HEAVY" or "DLH123 - LUFTHANSA 123"), aircraft type, and why it's a popular or interesting route.`,
+List every real-world scheduled airline route that departs ${departure} and arrives at ${arrival} only. Do not include return flights or the reverse direction. For each route include: destination airport ICAO code (${arrival}), airline name, full ATC callsign (ICAO airline 3-letter code + flight number, add "Heavy" or "Super" if the aircraft requires it, then a dash, then the ICAO telephony name + flight number + Heavy/Super — e.g. "BAW396 Heavy - SPEEDBIRD 396 HEAVY" or "DLH123 - LUFTHANSA 123"), aircraft type, and why it's a notable route.`,
               });
 
               groundedText = text;
@@ -100,37 +114,37 @@ For each flight include: destination airport ICAO code, airline name, full ATC c
         {
           title: 'Structuring results',
           task: wrapWithSpan(
-            {spanName: 'find-flight-route-structure', op: 'cli.task'},
+            {spanName: 'find-airline-routes-structure', op: 'cli.task'},
             async () => {
               const {output} = await generateText({
                 model: googleAI('gemini-2.5-flash'),
                 output: Output.array({element: flightSchema}),
                 experimental_telemetry: {
                   isEnabled: true,
-                  functionId: 'find-flight-route-structure',
+                  functionId: 'find-airline-routes-structure',
                 },
-                prompt: `Extract the flight route information from the following text and return it as structured data:\n\n${groundedText}`,
+                prompt: `Extract the airline route information from the following text and return it as structured data:\n\n${groundedText}`,
               });
 
               results = output ?? [];
-              Sentry.logger.info('Flight route search completed');
+              Sentry.logger.info('Airline route search completed');
               return 'Structuring complete';
             }
           ),
         },
       ]);
     } catch (error) {
-      Sentry.logger.error('Flight route search failed');
+      Sentry.logger.error('Airline route search failed');
       cancel(
-        `Failed to fetch flight routes: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to fetch airline routes: ${error instanceof Error ? error.message : String(error)}`
       );
       return;
     }
 
     if (!results || results.length === 0) {
       box(
-        `No matching installed airports found as destinations from ${departure}.`,
-        `Flight Routes from ${departure}`
+        `No airline routes found between ${departure} and ${arrival}.`,
+        `Airline Routes: ${departure} → ${arrival}`
       );
       return;
     }
@@ -144,6 +158,6 @@ For each flight include: destination airport ICAO code, airline name, full ATC c
       return lines.join('\n');
     });
 
-    box(resultLines.join('\n\n'), `Flight Routes from ${departureLabel}`);
+    box(resultLines.join('\n\n'), `Airline Routes: ${departureLabel} → ${arrivalLabel}`);
   }
 );
