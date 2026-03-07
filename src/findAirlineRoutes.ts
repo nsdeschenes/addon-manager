@@ -101,9 +101,9 @@ export const findAirlineRoutes = wrapWithSpan(
                   isEnabled: true,
                   functionId: 'find-airline-routes-search',
                 },
-                prompt: `I am a flight simulator pilot. Using real-world flight data, find all airline routes between ${departureLabel} and ${arrivalLabel}.
+                prompt: `I am a flight simulator pilot. Using real-world flight data, find all airline routes departing from ${departureLabel} and arriving at ${arrivalLabel}.
 
-List every real-world scheduled airline route operating between ${departure} and ${arrival} (in both directions). For each route include: destination airport ICAO code (${arrival}), airline name, full ATC callsign (ICAO airline 3-letter code + flight number, add "Heavy" or "Super" if the aircraft requires it, then a dash, then the ICAO telephony name + flight number + Heavy/Super — e.g. "BAW396 Heavy - SPEEDBIRD 396 HEAVY" or "DLH123 - LUFTHANSA 123"), aircraft type, and why it's a notable route.`,
+List every real-world scheduled airline route that departs ${departure} and arrives at ${arrival} only. Do not include return flights or the reverse direction. For each route include: destination airport ICAO code (${arrival}), airline name, full ATC callsign (ICAO airline 3-letter code + flight number, add "Heavy" or "Super" if the aircraft requires it, then a dash, then the ICAO telephony name + flight number + Heavy/Super — e.g. "BAW396 Heavy - SPEEDBIRD 396 HEAVY" or "DLH123 - LUFTHANSA 123"), aircraft type, and why it's a notable route.`,
               });
 
               groundedText = text;
