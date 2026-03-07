@@ -55,7 +55,11 @@ export const findFlightRoute = wrapWithSpan(
     const flightSchema = z.object({
       icao: z.string().describe('ICAO code of the destination airport'),
       airline: z.string().describe('Full airline name e.g. British Airways'),
-      callsign: z.string().describe('ICAO flight callsign e.g. BAW123'),
+      callsign: z
+        .string()
+        .describe(
+          'Full ATC callsign: ICAO airline code + flight number, optional Heavy/Super, dash, telephony name + flight number + Heavy/Super. e.g. "BAW396 Heavy - SPEEDBIRD 396 HEAVY" or "DLH123 - LUFTHANSA 123"'
+        ),
       aircraft: z.string().describe('Aircraft type e.g. Boeing 737-800'),
       reason: z
         .string()
@@ -85,7 +89,7 @@ My departure airport is ${departureLabel}.
 
 Using real-world flight data, find the top 5 most popular or interesting real-world flights departing from ${departure}. Only include destinations from my installed airport list above. If fewer than 5 match, list only the ones that do.
 
-For each flight include: destination airport ICAO code, airline name, flight callsign, aircraft type, and why it's a popular or interesting route.`,
+For each flight include: destination airport ICAO code, airline name, full ATC callsign (ICAO airline 3-letter code + flight number, add "Heavy" or "Super" if the aircraft requires it, then a dash, then the ICAO telephony name + flight number + Heavy/Super — e.g. "BAW396 Heavy - SPEEDBIRD 396 HEAVY" or "DLH123 - LUFTHANSA 123"), aircraft type, and why it's a popular or interesting route.`,
               });
 
               groundedText = text;
