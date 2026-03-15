@@ -93,7 +93,7 @@ export const loadAirports = wrapWithSpan(
       const startTime = performance.now();
       const response = await fetch(AIRPORTS_CSV_URL);
       if (!response.ok) {
-        s.stop('Failed to download airport data');
+        s.error('Failed to download airport data');
         Sentry.logger.error(
           Sentry.logger.fmt`Airport CSV fetch failed: ${response.status}`
         );
@@ -118,7 +118,7 @@ export const loadAirports = wrapWithSpan(
       s.stop(`Loaded ${airports.length} airports`);
       return true;
     } catch (error) {
-      s.stop('Failed to load airport data');
+      s.error('Failed to load airport data');
       Sentry.logger.error('Airport load failure');
       Sentry.captureException(error);
       return false;
