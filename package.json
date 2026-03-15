@@ -35,7 +35,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.31",
-    "@clack/prompts": "^1.0.0-alpha.9",
+    "@clack/prompts": "^1.1.0",
     "@sentry/bun": "^10.38.0",
     "ai": "^6.0.100",
     "drizzle-orm": "^1.0.0-beta.15-859cf75",
