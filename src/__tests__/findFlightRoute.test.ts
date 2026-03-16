@@ -34,7 +34,13 @@ mock.module('@clack/prompts', () => ({
       await item.task();
     }
   },
-  spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
+  spinner: () => ({
+    start: () => {},
+    stop: () => {},
+    message: () => {},
+    cancel: () => {},
+    error: () => {},
+  }),
 }));
 
 mock.module('@ai-sdk/google', () => ({

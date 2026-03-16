@@ -16,7 +16,13 @@ mock.module('@clack/prompts', () => ({
     }
   },
   cancel: () => {},
-  spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
+  spinner: () => ({
+    start: () => {},
+    stop: () => {},
+    message: () => {},
+    cancel: () => {},
+    error: () => {},
+  }),
 }));
 
 const {loadAddons} = await import('../loadAddons');

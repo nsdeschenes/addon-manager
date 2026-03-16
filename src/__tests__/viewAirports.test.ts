@@ -16,7 +16,13 @@ mock.module('@clack/prompts', () => ({
   },
   cancel: () => {},
   isCancel: (_v: unknown) => mockIsCancel,
-  spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
+  spinner: () => ({
+    start: () => {},
+    stop: () => {},
+    message: () => {},
+    cancel: () => {},
+    error: () => {},
+  }),
 }));
 
 const {extractIcaoCodes, formatAirportLabel, viewAirports} =

@@ -5,7 +5,13 @@ import {closeDb, getDb} from '../db/index';
 
 // Mock clack to suppress spinner output
 mock.module('@clack/prompts', () => ({
-  spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
+  spinner: () => ({
+    start: () => {},
+    stop: () => {},
+    message: () => {},
+    cancel: () => {},
+    error: () => {},
+  }),
 }));
 
 const {parseAirportsCsv, loadAirports} = await import('../loadAirports');
