@@ -3,6 +3,5 @@ changelog:
     labels:
       - skip-changelog
       - ci
-      - dependencies
       - documentation
       - release
