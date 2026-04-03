@@ -19,9 +19,6 @@ mock.module('@clack/prompts', () => ({
   spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
 }));
 
-const {extractIcaoCodes, formatAirportLabel, viewAirports} =
-  await import('../viewAirports');
-
 function makeAddon(overrides: Partial<Addon> = {}): Addon {
   return {
     title: 'Test Addon',
@@ -51,7 +48,9 @@ function makeAirport(overrides: Partial<Airport> = {}): Airport {
   };
 }
 
-describe('extractIcaoCodes', () => {
+describe('extractIcaoCodes', async () => {
+  const {extractIcaoCodes} = await import('../viewAirports');
+
   test('returns empty array for addon with no items', () => {
     expect(extractIcaoCodes([makeAddon()])).toEqual([]);
   });
@@ -100,7 +99,9 @@ describe('extractIcaoCodes', () => {
   });
 });
 
-describe('formatAirportLabel', () => {
+describe('formatAirportLabel', async () => {
+  const {formatAirportLabel} = await import('../viewAirports');
+
   test('returns ICAO alone when not in map', () => {
     const map = new Map<string, Airport>();
     expect(formatAirportLabel('KJFK', map)).toBe('KJFK');
@@ -135,7 +136,9 @@ describe('formatAirportLabel', () => {
   });
 });
 
-describe('viewAirports enrichment', () => {
+describe('viewAirports enrichment', async () => {
+  const {viewAirports} = await import('../viewAirports');
+
   beforeEach(() => {
     const sqlite = new Database(':memory:');
     getDb(sqlite);
