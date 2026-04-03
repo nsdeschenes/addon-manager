@@ -14,7 +14,6 @@ mock.module('@clack/prompts', () => ({
   box: (content: string, _title: string) => {
     lastBoxContent = content;
   },
-  cancel: () => {},
   isCancel: (_v: unknown) => mockIsCancel,
   spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
 }));

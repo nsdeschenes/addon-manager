@@ -15,7 +15,6 @@ mock.module('@clack/prompts', () => ({
       await item.task();
     }
   },
-  cancel: () => {},
   spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
 }));
 

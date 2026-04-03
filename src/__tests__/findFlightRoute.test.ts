@@ -24,7 +24,6 @@ let lastBoxTitle = '';
 mock.module('@clack/prompts', () => ({
   autocomplete: async (_opts: unknown) => mockDeparture,
   isCancel: (_v: unknown) => mockIsCancel,
-  cancel: () => {},
   box: (content: string, title: string) => {
     lastBoxContent = content;
     lastBoxTitle = title;

@@ -4,9 +4,7 @@ import {join} from 'node:path';
 
 import {afterEach, beforeEach, describe, expect, mock, test} from 'bun:test';
 
-mock.module('@clack/prompts', () => ({
-  cancel: () => {},
-}));
+mock.module('@clack/prompts', () => ({}));
 
 let testDir: string;
 let configFile: string;
