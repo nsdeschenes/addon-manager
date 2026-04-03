@@ -1,19 +1,19 @@
 # Labels applied when PR touches these paths. Aligns with release.yml exclusions.
 ci:
- - changed-files:
-    - any-glob-to-any-file: .github/**/*
+  - changed-files:
+      - any-glob-to-any-file: .github/**/*
 
 dependencies:
   - changed-files:
-    - any-glob-to-any-file: package.json
+      - any-glob-to-any-file: package.json
   - any-glob-to-any-file: package.json
   - any-glob-to-any-file: bun.lock
-  - any-glob-to-any-file: "**/package.json"
-  - any-glob-to-any-file: "**/bun.lock"
+  - any-glob-to-any-file: '**/package.json'
+  - any-glob-to-any-file: '**/bun.lock'
 
 application:
   - changed-files:
-    - any-glob-to-any-file: src/**/*
+      - any-glob-to-any-file: src/**/*
 
 release:
   - head-branch: ^release/
