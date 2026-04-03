@@ -14,7 +14,7 @@ on:
       - 'package.json'
       - 'bun.lock'
       - 'tsconfig.json'
-      - '.prettierrc*'
+      - '.oxfmtrc*'
       - 'eslint.config.*'
       - '.eslintrc*'
       - '**.test.*'
@@ -73,7 +73,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Check formatting
-        run: bun run lint:prettier
+        run: bun run lint:format
 
   type-check:
     name: Type check
@@ -201,7 +201,7 @@ jobs:
       - name: Codecov Action
         uses: getsentry/codecov-action@0.2.0
         with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            directory: ./coverage
-            coverage-format: lcov
-            post-pr-comment: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          directory: ./coverage
+          coverage-format: lcov
+          post-pr-comment: true
