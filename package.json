@@ -25,7 +25,7 @@
     "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
-    "drizzle-kit": "^1.0.0-beta.15-859cf75",
+    "drizzle-kit": "1.0.0-beta.20",
     "eslint": "^9.39.2",
     "prettier": "^3.8.1",
     "typescript-eslint": "^8.52.0"
@@ -38,7 +38,7 @@
     "@clack/prompts": "^1.0.0-alpha.9",
     "@sentry/bun": "^10.38.0",
     "ai": "^6.0.100",
-    "drizzle-orm": "^1.0.0-beta.15-859cf75",
+    "drizzle-orm": "1.0.0-beta.20",
     "zod": "^4.3.5"
   }
 }
