@@ -4,11 +4,11 @@ import {join} from 'node:path';
 
 import {afterEach, beforeEach, describe, expect, mock, test} from 'bun:test';
 
-import {readConfig, writeConfig} from '../config';
-
 mock.module('@clack/prompts', () => ({
   cancel: () => {},
 }));
+
+const {readConfig, writeConfig} = await import('../config');
 
 let testDir: string;
 let configFile: string;
