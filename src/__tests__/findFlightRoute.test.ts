@@ -24,7 +24,6 @@ let lastBoxTitle = '';
 mock.module('@clack/prompts', () => ({
   autocomplete: async (_opts: unknown) => mockDeparture,
   isCancel: (_v: unknown) => mockIsCancel,
-  cancel: () => {},
   box: (content: string, title: string) => {
     lastBoxContent = content;
     lastBoxTitle = title;
@@ -59,8 +58,6 @@ mock.module('ai', () => ({
   },
 }));
 
-const {findFlightRoute} = await import('../findFlightRoute');
-
 function makeAddon(overrides: Partial<Addon> = {}): Addon {
   return {
     title: 'Test Addon',
@@ -90,7 +87,9 @@ function makeAirport(overrides: Partial<Airport> = {}): Airport {
   };
 }
 
-describe('findFlightRoute', () => {
+describe('findFlightRoute', async () => {
+  const {findFlightRoute} = await import('../findFlightRoute');
+
   beforeEach(() => {
     const sqlite = new Database(':memory:');
     getDb(sqlite);

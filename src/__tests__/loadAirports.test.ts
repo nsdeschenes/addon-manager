@@ -8,12 +8,12 @@ mock.module('@clack/prompts', () => ({
   spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
 }));
 
-const {parseAirportsCsv, loadAirports} = await import('../loadAirports');
-
 const HEADER =
   'ident,type,name,latitude_deg,longitude_deg,elevation_ft,iso_country,municipality,gps_code,iata_code';
 
-describe('parseAirportsCsv', () => {
+describe('parseAirportsCsv', async () => {
+  const {parseAirportsCsv} = await import('../loadAirports');
+
   test('returns empty array for empty string', () => {
     expect(parseAirportsCsv('')).toEqual([]);
   });
@@ -100,7 +100,9 @@ describe('parseAirportsCsv', () => {
   });
 });
 
-describe('loadAirports', () => {
+describe('loadAirports', async () => {
+  const {loadAirports} = await import('../loadAirports');
+
   let originalFetch: typeof globalThis.fetch;
 
   beforeEach(() => {

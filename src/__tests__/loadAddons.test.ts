@@ -15,11 +15,8 @@ mock.module('@clack/prompts', () => ({
       await item.task();
     }
   },
-  cancel: () => {},
   spinner: () => ({start: () => {}, stop: () => {}, message: () => {}}),
 }));
-
-const {loadAddons} = await import('../loadAddons');
 
 const VALID_MANIFEST = JSON.stringify({
   dependencies: [],
@@ -53,7 +50,9 @@ async function createAddon(
   return dir;
 }
 
-describe('loadAddons', () => {
+describe('loadAddons', async () => {
+  const {loadAddons} = await import('../loadAddons');
+
   let communityPath: string;
   let exitSpy: ReturnType<typeof spyOn>;
 

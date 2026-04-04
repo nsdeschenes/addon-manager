@@ -12,7 +12,7 @@ permissions:
 jobs:
     publish:
         name: Publish Release
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-22.04
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
         steps:
             - name: Check release label
@@ -33,7 +33,7 @@ jobs:
               if: steps.check_labels.outputs.has_release == 'true'
               uses: oven-sh/setup-bun@v2
               with:
-                  bun-version: latest
+                  bun-version: 1.3.11
 
             - name: Cache dependencies
               if: steps.check_labels.outputs.has_release == 'true'

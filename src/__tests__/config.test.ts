@@ -2,9 +2,9 @@ import fs from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 
-import {afterEach, beforeEach, describe, expect, test} from 'bun:test';
+import {afterEach, beforeEach, describe, expect, mock, test} from 'bun:test';
 
-import {readConfig, writeConfig} from '../config';
+mock.module('@clack/prompts', () => ({}));
 
 let testDir: string;
 let configFile: string;
@@ -18,7 +18,9 @@ afterEach(async () => {
   await fs.rm(testDir, {recursive: true, force: true});
 });
 
-describe('readConfig', () => {
+describe('readConfig', async () => {
+  const {readConfig} = await import('../config');
+
   test('returns null when config file does not exist', async () => {
     const result = await readConfig(undefined, {configFile});
     expect(result).toBeNull();
@@ -66,7 +68,9 @@ describe('readConfig', () => {
   });
 });
 
-describe('writeConfig', () => {
+describe('writeConfig', async () => {
+  const {readConfig, writeConfig} = await import('../config');
+
   test('writes config as YAML to the config file', async () => {
     await writeConfig(
       {communityPath: '/sim/community'},
@@ -106,7 +110,9 @@ describe('writeConfig', () => {
   });
 });
 
-describe('ConfigSchema validation', () => {
+describe('ConfigSchema validation', async () => {
+  const {readConfig} = await import('../config');
+
   test('rejects tracesSampleRate above 1', async () => {
     await fs.writeFile(configFile, 'communityPath: /path\ntracesSampleRate: 1.5\n');
     const result = await readConfig(undefined, {configFile});
